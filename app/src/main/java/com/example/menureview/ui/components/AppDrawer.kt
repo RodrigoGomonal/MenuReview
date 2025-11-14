@@ -16,22 +16,24 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
+
 fun AppDrawer(
     currentScreen: String,
     onNavigateTo: (route: String) -> Unit,
     showDrawer: Boolean,
     navController: NavController,
-    // La función content AHORA espera recibir el PaddingValues del Scaffold
     content: @Composable (padding: PaddingValues) -> Unit
+
 ) {
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route ?: "Main"
-    val scaffoldContent: @Composable (PaddingValues) -> Unit = { innerPadding ->
-        // 💡 CLAVE: Aplicamos el padding que viene del Scaffold al contenido (NavHost)
-        content(innerPadding)
+    val scaffoldContent: @Composable (PaddingValues) -> Unit = {
+        innerPadding -> content(innerPadding)
     }
     // 1. Lógica del Scaffold dentro del Drawer
     if (showDrawer) {
@@ -54,15 +56,14 @@ fun AppDrawer(
                             style = MaterialTheme.typography.titleLarge
                         )
                         HorizontalDivider()
-
                         Text(
                             text = "Secciones",
                             modifier = Modifier.padding(16.dp),
+
                             style = MaterialTheme.typography.titleMedium
                         )
 
                         // --- Ítems de Navegación del Drawer ---
-
                         NavigationDrawerItem(
                             label = { Text("Inicio") },
                             selected = currentDestination == "Main",
@@ -70,13 +71,12 @@ fun AppDrawer(
                                 scope.launch {
                                     drawerState.close()
                                     navController.navigate("Main") {
-                                        // Esto limpia la pila al navegar a Inicio
                                         popUpTo(navController.graph.startDestinationId) { inclusive = true }
+
                                     }
                                 }
                             }
                         )
-
                         NavigationDrawerItem(
                             label = { Text("Perfil") },
                             selected = currentDestination == "PerfilUser",
@@ -87,7 +87,6 @@ fun AppDrawer(
                                 }
                             }
                         )
-
                         NavigationDrawerItem(
                             label = { Text("Restaurante") },
                             selected = currentDestination == "PerfilRestaurant",
@@ -98,9 +97,7 @@ fun AppDrawer(
                                 }
                             }
                         )
-
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
                         NavigationDrawerItem(
                             label = { Text("Configuración") },
                             selected = false,
@@ -144,8 +141,6 @@ fun AppDrawer(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // El contenido (NavHost) se dibuja dentro de este Box
-            // y el padding de la TopBar es 0, ya que no hay TopBar.
             content(PaddingValues())
         }
     }

@@ -106,7 +106,6 @@ fun LoginDialog(
             }
         }
     }
-
     // Estado de login (éxito o error)
     LaunchedEffect(state) {
         when {

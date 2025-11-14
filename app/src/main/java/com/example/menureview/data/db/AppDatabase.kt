@@ -21,7 +21,7 @@ import com.example.menureview.data.models.UserEntity
         TagEntity::class
     ],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -29,17 +29,17 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun commentDao(): CommentDao
     abstract fun tagDao(): TagDao
 
-    companion object {
-        @Volatile private var INSTANCE: AppDatabase? = null
-
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "menu_review_db"
-                ).fallbackToDestructiveMigration().build().also { INSTANCE = it }
-            }
-        }
-    }
+//    companion object {
+//        @Volatile private var INSTANCE: AppDatabase? = null
+//
+//        fun getDatabase(context: Context): AppDatabase {
+//            return INSTANCE ?: synchronized(this) {
+//                Room.databaseBuilder(
+//                    context.applicationContext,
+//                    AppDatabase::class.java,
+//                    "menu_review_db"
+//                ).fallbackToDestructiveMigration().build().also { INSTANCE = it }
+//            }
+//        }
+//    }
 }

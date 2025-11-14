@@ -18,8 +18,10 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
@@ -44,6 +46,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat)
     val room_version = "2.8.3" // Reemplaza con la versión más reciente
 
     implementation(libs.androidx.core.ktx)
@@ -63,6 +66,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.6")
 
@@ -71,4 +75,9 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     testImplementation("androidx.room:room-testing:$room_version")
+
+    // Añade la dependencia de Google Maps
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    // Si necesitas funcionalidades de ubicación (GPS)
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

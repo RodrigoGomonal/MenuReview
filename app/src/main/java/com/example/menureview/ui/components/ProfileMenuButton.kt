@@ -31,138 +31,95 @@ import com.example.menureview.data.db.AppDatabase
 import com.example.menureview.ui.screens.LoginDialog
 import com.example.menureview.ui.screens.RegisterDialog
 import com.example.menureview.viewmodel.UserViewModel
-import com.example.menureview.viewmodel.UserViewModelFactory
 import com.example.menureview.R
 
 @Composable
-fun ProfileMenuButton() {
-
-    val context = LocalContext.current
-    val db = remember { AppDatabase.getDatabase(context) }
-
-    val userViewModel: UserViewModel = viewModel(
-        factory = UserViewModelFactory(db.userDao())
-    )
-
+fun ProfileMenuButton(userViewModel: UserViewModel) {
+    val state by userViewModel.state.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     var showLoginDialog by remember { mutableStateOf(false) }
     var showRegisterDialog by remember { mutableStateOf(false) }
 
+
     Box {
-        IconButton(onClick = { expanded = !expanded }) {
-            Icon(Icons.Default.Person, contentDescription = "Perfil", modifier = Modifier.size(40.dp))
-        }
+        if (state.usuarioActual == null) {
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(Icons.Default.Person, contentDescription = "Perfil", modifier = Modifier.size(40.dp))
+            }
 
-        DropdownMenu(
-            modifier = Modifier.background(Color(0xFFDCEAF2)),
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("Iniciar sesión", color = Color(0xFF656C73)) },
-                onClick = {
-                    expanded = false
-                    showLoginDialog = true
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Registrarse", color = Color(0xFF656C73)) },
-                onClick = {
-                    expanded = false
-                    showRegisterDialog = true
-                }
-            )
-        }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(Color(0xFFDCEAF2))
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Iniciar sesión", color = Color(0xFF656C73)) },
+                    onClick = {
+                        expanded = false
+                        showLoginDialog = true
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Registrarse", color = Color(0xFF656C73)) },
+                    onClick = {
+                        expanded = false
+                        showRegisterDialog = true
+                    }
+                )
+            }
 
-        if (showLoginDialog) {
-            LoginDialog(
-                onDismiss = { showLoginDialog = false },
-                userViewModel = userViewModel,
-                onLoginSuccess = { showLoginDialog = false }
-            )
-        }
+            if (showLoginDialog) {
+                LoginDialog(
+                    onDismiss = { showLoginDialog = false },
+                    userViewModel = userViewModel,
+                    onLoginSuccess = { showLoginDialog = false }
+                )
+            }
+            if (showRegisterDialog) {
+                RegisterDialog(
+                    onDismiss = { showRegisterDialog = false },
+                    userViewModel = userViewModel
+                )
+            }
+        } else {
+            // Usuario autenticado
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(Color(0xFFDCEAF2))
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_circle_user),
+                    contentDescription = "Usuario",
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(state.usuarioActual?.name ?: "Usuario", color = Color(0xFF656C73))
+            }
 
-        if (showRegisterDialog) {
-            RegisterDialog(
-                onDismiss = { showRegisterDialog = false },
-                userViewModel = userViewModel
-            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(Color(0xFFDCEAF2))
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Ver perfil", color = Color(0xFF656C73)) },
+                    onClick = {
+                        expanded = false
+                        // Aquí puedes navegar a PerfilUserPage
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Cerrar sesión", color = Color.Red) },
+                    onClick = {
+                        expanded = false
+                        userViewModel.logout()
+                    }
+                )
+            }
         }
     }
 }
-
-//@Composable
-//fun ProfileMenuButton(userViewModel: UserViewModel = viewModel()) {
-//    val state by userViewModel.state.collectAsState()
-//    var expanded by remember { mutableStateOf(false) }
-//    var showLoginDialog by remember { mutableStateOf(false) }
-//
-//    Box {
-//        if (state.currentUser == null) {
-//            IconButton(onClick = { expanded = !expanded }) {
-//                Icon(Icons.Default.Person, contentDescription = "Perfil", modifier = Modifier.size(40.dp))
-//            }
-//
-//            DropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false },
-//                modifier = Modifier.background(Color(0xFFDCEAF2))
-//            ) {
-//                DropdownMenuItem(
-//                    text = { Text("Iniciar sesión", color = Color(0xFF656C73)) },
-//                    onClick = {
-//                        expanded = false
-//                        showLoginDialog = true
-//                    }
-//                )
-//            }
-//
-//            if (showLoginDialog) {
-//                LoginDialog(
-//                    onDismiss = { showLoginDialog = false },
-//                    userViewModel = userViewModel,
-//                    onLoginSuccess = { showLoginDialog = false }
-//                )
-//            }
-//        } else {
-//            // Usuario autenticado
-//            Row(
-//                modifier = Modifier
-//                    .clip(RoundedCornerShape(50))
-//                    .background(Color(0xFFDCEAF2))
-//                    .clickable { expanded = !expanded }
-//                    .padding(horizontal = 8.dp, vertical = 4.dp),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.ic_circle_user),
-//                    contentDescription = "Usuario",
-//                    modifier = Modifier.size(32.dp)
-//                )
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text(state.currentUser?.name ?: "Usuario", color = Color(0xFF656C73))
-//            }
-//
-//            DropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false },
-//                modifier = Modifier.background(Color(0xFFDCEAF2))
-//            ) {
-//                DropdownMenuItem(
-//                    text = { Text("Ver perfil", color = Color(0xFF656C73)) },
-//                    onClick = {
-//                        expanded = false
-//
-//                    }
-//                )
-//                DropdownMenuItem(
-//                    text = { Text("Cerrar sesión", color = Color.Red) },
-//                    onClick = {
-//                        expanded = false
-//                        userViewModel.logout()
-//                    }
-//                )
-//            }
-//        }
-//    }
-//}
