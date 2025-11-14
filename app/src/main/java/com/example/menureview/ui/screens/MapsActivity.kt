@@ -52,7 +52,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback { // <-- Implementa
         // Inicia el proceso de verificación y solicitud de GPS
         checkLocationPermission()
     }
-
     // Función para habilitar la capa del GPS
     private fun enableMyLocation() {
         try {
@@ -62,7 +61,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback { // <-- Implementa
             e.printStackTrace()
         }
     }
-
     // Función para verificar y solicitar el permiso
     private fun checkLocationPermission() {
         when {

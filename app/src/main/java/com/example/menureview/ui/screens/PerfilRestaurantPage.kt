@@ -1,56 +1,74 @@
 package com.example.menureview.ui.screens
 
-import androidx.compose.foundation.Image
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.menureview.R
+import com.example.menureview.data.db.sampleRestaurants
+import com.example.menureview.data.models.RestaurantEntity
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PerfilRestaurantePage(navController: NavHostController) {
+fun PerfilRestaurantePage(
+    navController: NavHostController,
+    restaurant: RestaurantEntity = sampleRestaurants[0]   // ← usa uno de muestra
+) {
     var showContactDialog by remember { mutableStateOf(false) }
+
+    val accent = Color(0xFF4CAF50)
+    val bgSoft = Color(0xFFDCEAF2)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(5.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .background(bgSoft)
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ----------------------- 1 Fila: Imagen del restaurante (4 cuadros) -------------------
-        Box(
+
+        // ----------------------- Imagen grande -----------------------
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(4f)
-                .background(Color(0xFF4CAF50)),
-            contentAlignment = Alignment.Center
+                .height(220.dp),
+            shape = RoundedCornerShape(20.dp),
+            color = Color(0xFF4CAF50),
+            tonalElevation = 6.dp,
+            shadowElevation = 6.dp
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo),
-                contentDescription = "Imagen del restaurante",
+            AsyncImage(
+                model = restaurant.imageUrl,
+                contentDescription = restaurant.name,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
         }
-        // ----------------------- 2 Fila: Info y valoración (2 cuadros) -----------------------
+
+        // ----------------------- Info principal -----------------------
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(2f),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Columna izquierda (nombre, ubicación)
@@ -61,13 +79,13 @@ fun PerfilRestaurantePage(navController: NavHostController) {
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Restaurante Sakura",
+                    text = restaurant.name,
                     style = MaterialTheme.typography.titleLarge,
                     color = Color(0xFF656C73),
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Santiago Centro",
+                    text = restaurant.ubication,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -81,7 +99,7 @@ fun PerfilRestaurantePage(navController: NavHostController) {
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = "⭐ 4.7",
+                    text = "⭐ ${restaurant.score}",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color(0xFFD9B88F),
                     fontWeight = FontWeight.Bold
@@ -91,77 +109,44 @@ fun PerfilRestaurantePage(navController: NavHostController) {
             }
         }
 
-        // ----------------------- 3 Fila: Acciones circulares (1 cuadro) -----------------------
+        // ----------------------- Acciones redondas -----------------------
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp)
-                .weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            val iconColor = Color(0xFF575D63)
-
-            @Composable
-            fun ActionIcon(icon: Int, description: String, onClick: () -> Unit) {
-                val interactionSource = remember { MutableInteractionSource() }
-
-                Surface(
-                    modifier = Modifier
-                        .size(55.dp)
-                        .clip(CircleShape)
-                        .indication(
-                            interactionSource,
-                            androidx.compose.material3.ripple()
-                        )
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null, // evitamos la sombra cuadrada
-                            onClick = onClick
-                        ),
-                    shape = CircleShape,
-                    color = Color(0xFF4CAF50),
-                    tonalElevation = 2.dp,
-                    shadowElevation = 2.dp
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(icon),
-                            contentDescription = description,
-                            tint = iconColor,
-                            modifier = Modifier.size(26.dp)
-                        )
-                    }
-                }
-            }
-
-            ActionIcon(
+            val context = LocalContext.current
+            ActionCircle(
                 icon = R.drawable.ic_location,
-                description = "Ubicación",
-                onClick = { /* acción */ }
+                text = "Ubicación",
+                color = accent,
+                onClick = { val intent = Intent(context, MapsActivity::class.java)
+                    context.startActivity(intent) }
             )
-            ActionIcon(
+
+            ActionCircle(
                 icon = R.drawable.ic_phone,
-                description = "Contacto",
-                onClick = { showContactDialog = true }
-            )
-            ActionIcon(
+                text = "Llamar",
+                color = accent
+            ) { showContactDialog = true }
+
+            ActionCircle(
                 icon = R.drawable.ic_camera,
-                description = "Fotos",
-                onClick = { /* acción */ }
-            )
-            ActionIcon(
+                text = "Fotos",
+                color = accent
+            ) { /* abrir galería */ }
+
+            ActionCircle(
                 icon = R.drawable.ic_bubble,
-                description = "Comentarios",
-                onClick = { navController.navigate("Calification") }
-            )
+                text = "Comentarios",
+                color = accent
+            ) { navController.navigate("Calification") }
         }
 
-        // ----------------------- 4 Fila: Características (3 cuadros) -----------------------
+        // ----------------------- Características -----------------------
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                //.background(Color(0xFFF2DEC4))
                 .padding(vertical = 5.dp)
         ) {
             // Cinta horizontal desplazable
@@ -190,29 +175,40 @@ fun PerfilRestaurantePage(navController: NavHostController) {
                             text = caracteristicas[index],
                             modifier = Modifier
                                 .padding(horizontal = 14.dp, vertical = 8.dp),
-                            color = Color.Black,
+                            color = Color(0xFF533E25),
                             fontSize = 14.sp
                         )
                     }
                 }
             }
         }
-        // ----------------------- 5 Fila: Descripción (2 cuadros) -----------------------
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(4f)
-                .background(Color(0xFF4CAF50))
-                .padding(5.dp)
+
+        // ----------------------- Descripción -----------------------
+        Surface(
+            modifier = Modifier.fillMaxWidth().height(210.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = Color(0xFF4CAF50),
+            tonalElevation = 4.dp,
+            shadowElevation = 4.dp
         ) {
-            Text(
-                text = "Descubre el auténtico sabor japonés con un toque moderno. " +
-                        "En Sakura disfrutarás una experiencia única entre aromas, sabores y cultura oriental.",
-                color = Color.White,
-                style = MaterialTheme.typography.bodyLarge
-            )
+            Column(modifier = Modifier.padding(16.dp)) {
+
+                Text(
+                    text = restaurant.description,
+                    color = Color(0xFF533E25),
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Descubre el auténtico sabor japonés con un toque moderno. " +
+                            "En Sakura disfrutarás una experiencia única entre aromas, sabores y cultura oriental.",
+                    color = Color(0xFF533E25),
+                )
+            }
         }
     }
+
     // ----------------------- Modal de contacto -----------------------
     if (showContactDialog) {
         AlertDialog(
@@ -224,11 +220,13 @@ fun PerfilRestaurantePage(navController: NavHostController) {
             },
             title = { Text("Contacto del Restaurante") },
             text = {
-                Column {
-                    Text("Correo: contacto@sakura.cl")
-                    Text("Teléfono: +56 9 1234 5678")
-                    Text("Facebook: SakuraRestauranteCL")
-                    Text("Instagram: @sakura_restaurante")
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Correo: SushiZen@gmail.cl")
+                    Text("Teléfono: ${restaurant.phone}")
+                    Text("Facebook: SushiZen_RestauranteCL")
+                    Text("Instagram: @SushiZen_restaurante")
+
+
                 }
             }
         )
@@ -236,18 +234,35 @@ fun PerfilRestaurantePage(navController: NavHostController) {
 }
 
 @Composable
-fun CircleButton(icon: Int, description: String, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(64.dp)
-            .background(Color(0xFFD9B88F), shape = CircleShape)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+fun ActionCircle(icon: Int, text: String, color: Color, onClick: () -> Unit) {
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = description,
-            tint = Color(0xFF656C73)
+
+        Surface(
+            modifier = Modifier
+                .size(60.dp)
+                .clip(CircleShape)
+                .clickable { onClick() },
+            shape = CircleShape,
+            color = color.copy(alpha = 0.25f),
+            tonalElevation = 4.dp
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = text,
+                    tint = color,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = Color(0xFF656C73)
         )
     }
 }

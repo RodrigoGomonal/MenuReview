@@ -1,5 +1,6 @@
 package com.example.menureview.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,12 +16,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.launch
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 
 fun AppDrawer(
-    //currentScreen: String,
     onNavigateTo: (route: String) -> Unit,
     showDrawer: Boolean,
     navController: NavController,

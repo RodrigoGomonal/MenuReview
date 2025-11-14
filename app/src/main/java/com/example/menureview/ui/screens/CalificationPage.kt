@@ -21,16 +21,252 @@ import androidx.navigation.NavHostController
 import com.example.menureview.R
 import kotlin.math.roundToInt
 
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun CalificationPage(
+//    onVolver: () -> Unit = {}
+//) {
+//    val fondoNegro = Color(0xFF000000)
+//    val amarilloEstrella = Color(0xFFFFD700)
+//    val verde = Color(0xFF4CAF50)
+//    val verdeClaro = Color(0xFF81C784)
+//
+//    var comentarios = remember {
+//        mutableStateListOf(
+//            ComentarioUsuario("Ana", 5f, "Excelente atención y comida!", "12/10/2025"),
+//            ComentarioUsuario("Pedro", 4f, "Muy bueno, aunque algo lento el servicio.", "10/10/2025"),
+//            ComentarioUsuario("Lucía", 3.5f, "Bien, pero esperaba más variedad.", "07/10/2025")
+//        )
+//    }
+//    // 💡 CÁLCULO DINÁMICO DE ESTADÍSTICAS
+//    val stats by remember(comentarios.size) { // Recalcula si la lista cambia de tamaño
+//        derivedStateOf { calculateStatistics(comentarios) }
+//    }
+//
+//    val notaPromedio = stats.averageNote
+//    val totalComentarios = stats.totalCount
+//    val distributionMap = stats.distribution
+//
+//    // Las notas a mostrar en el orden 5, 4, 3, 2, 1
+//    val notasDistribucion = listOf(5, 4, 3, 2, 1)
+//    // Gestos de deslizamiento (para volver atrás)
+//    val gestureModifier = Modifier.pointerInput(Unit) {
+//        detectHorizontalDragGestures { _, dragAmount ->
+//            if (dragAmount > 30) onVolver()
+//        }
+//    }
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(fondoNegro)
+//            .then(gestureModifier)
+//            .windowInsetsPadding(WindowInsets.statusBars)
+//            .padding(horizontal = 16.dp, vertical = 5.dp),
+//        verticalArrangement = Arrangement.spacedBy(1.dp)
+//    ) {
+//        // 1️⃣ Fila: Botón volver
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .weight(1f),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            IconButton(onClick = onVolver) {
+//                Icon(
+//                    painter = painterResource(R.drawable.ic_arrow_left), // ícono de flecha atrás
+//                    contentDescription = "Volver",
+//                    tint = verde
+//                )
+//            }
+//        }
+//
+//        // 2️⃣ Fila: Nota general y estrellas
+//        Column(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .weight(2f),
+//            horizontalAlignment = Alignment.CenterHorizontally,
+//            verticalArrangement = Arrangement.spacedBy(3.dp)
+//        ) {
+//            Text(
+//                text = String.format("%.1f", notaPromedio),
+//                color = Color.White,
+//                fontSize = 48.sp,
+//                fontWeight = FontWeight.Bold
+//            )
+//
+//            Row(
+//                horizontalArrangement = Arrangement.Center
+//            ) {
+//                repeat(5) { i ->
+//                    val filled = i < notaPromedio.roundToInt()
+//                    Icon(
+//                        painter = painterResource(
+//                            if (filled) R.drawable.ic_star_full else R.drawable.ic_star_empty
+//                        ),
+//                        contentDescription = null,
+//                        tint = amarilloEstrella,
+//                        modifier = Modifier.size(30.dp)
+//                    )
+//                }
+//            }
+//
+//            Text(
+//                text = "$totalComentarios comentarios",
+//                color = Color.Gray,
+//                fontSize = 14.sp
+//            )
+//        }
+//
+//        // 3️⃣ Fila: Barras de distribución de notas
+//        Column(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .weight(3f),
+//            verticalArrangement = Arrangement.spacedBy(1.dp)
+//        ) {
+//            // Calculamos el conteo máximo para normalizar el ancho de las barras
+//            val maxConteo = distributionMap.values.maxOrNull()?.toFloat() ?: 1f
+//
+//            notasDistribucion.forEach { nota ->
+//                // Obtenemos el conteo real de la nota
+//                val conteo = distributionMap[nota] ?: 0
+//
+//                // Si maxConteo es 0 (no hay comentarios), evitamos la división por cero
+//                val ancho = if (maxConteo > 0) conteo.toFloat() / maxConteo else 0f
+//
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    modifier = Modifier.padding(vertical = 2.dp)
+//                ) {
+//                    Text(
+//                        text = "$nota",
+//                        color = Color.White,
+//                        fontSize = 14.sp,
+//                        modifier = Modifier.width(20.dp)
+//                    )
+//                    Box(
+//                        // Llenamos el ancho en base a la proporción calculada
+//                        modifier = Modifier
+//                            .fillMaxWidth(ancho)
+//                            .height(14.dp)
+//                            .clip(RoundedCornerShape(6.dp))
+//                            .background(verde)
+//                    )
+//                }
+//            }
+//        }
+//
+//        // 4️⃣ Fila: Comentarios
+//        LazyColumn(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .weight(5f),
+//            verticalArrangement = Arrangement.spacedBy(2.dp)
+//        ) {
+//            items(comentarios.size) { index ->
+//                val c = comentarios[index]
+//                Surface(
+//                    color = verdeClaro.copy(alpha = 0.2f),
+//                    shape = RoundedCornerShape(12.dp),
+//                    tonalElevation = 2.dp,
+//                    shadowElevation = 2.dp,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Column(modifier = Modifier.padding(10.dp)) {
+//                        Row(
+//                            modifier = Modifier.fillMaxWidth(),
+//                            horizontalArrangement = Arrangement.SpaceBetween,
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            Row(verticalAlignment = Alignment.CenterVertically) {
+//                                // Imagen o inicial
+//                                Box(
+//                                    modifier = Modifier
+//                                        .size(40.dp)
+//                                        .clip(CircleShape)
+//                                        .background(verde),
+//                                    contentAlignment = Alignment.Center
+//                                ) {
+//                                    Text(
+//                                        text = c.usuario.first().uppercase(),
+//                                        color = Color.White,
+//                                        fontWeight = FontWeight.Bold
+//                                    )
+//                                }
+//
+//                                Spacer(modifier = Modifier.width(8.dp))
+//
+//                                // Estrellas + nota
+//                                Row(verticalAlignment = Alignment.CenterVertically) {
+//                                    repeat(5) { i ->
+//                                        val filled = i < c.nota.roundToInt()
+//                                        Icon(
+//                                            painter = painterResource(
+//                                                if (filled) R.drawable.ic_star_full else R.drawable.ic_star_empty
+//                                            ),
+//                                            contentDescription = null,
+//                                            tint = amarilloEstrella,
+//                                            modifier = Modifier.size(16.dp)
+//                                        )
+//                                    }
+//                                    Spacer(modifier = Modifier.width(4.dp))
+//                                    Text(
+//                                        text = String.format("%.1f", c.nota),
+//                                        color = Color.White,
+//                                        fontSize = 14.sp
+//                                    )
+//                                }
+//                            }
+//
+//                            // Fecha
+//                            Text(
+//                                text = c.fecha,
+//                                color = Color.Gray,
+//                                fontSize = 12.sp
+//                            )
+//                        }
+//
+//                        Spacer(modifier = Modifier.height(6.dp))
+//                        Text(
+//                            text = c.comentario,
+//                            color = Color.White,
+//                            fontSize = 14.sp
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//
+//        // 5️⃣ Fila: Botón comentar
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .weight(1f),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Button(
+//                onClick = { /* abrir diálogo */ },
+//                colors = ButtonDefaults.buttonColors(containerColor = verde)
+//            ) {
+//                Text("Comentar", color = Color.White)
+//            }
+//        }
+//    }
+//}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalificationPage(
-    navController: NavHostController,
     onVolver: () -> Unit = {}
 ) {
-    val fondoNegro = Color(0xFF000000)
-    val amarilloEstrella = Color(0xFFFFD700)
-    val verde = Color(0xFF4CAF50)
-    val verdeClaro = Color(0xFF81C784)
+    val bgSoft = Color(0xFFDCEAF2)               // Nuevo fondo suave
+    val starYellow = Color(0xFFFFD700)
+    val bluePrimary = Color(0xFF4CAF50)          // Azul moderno
+    val blueLight = Color(0xFF4CAF50)            // Azul claro para barras
+    val blueAvatar = Color(0xFF4CAF50)           // Azul más oscuro para avatar
+    val buttonBlue = Color(0xFF4CAF50)           // Azul elegante para botón
 
     var comentarios = remember {
         mutableStateListOf(
@@ -39,18 +275,16 @@ fun CalificationPage(
             ComentarioUsuario("Lucía", 3.5f, "Bien, pero esperaba más variedad.", "07/10/2025")
         )
     }
-    // 💡 CÁLCULO DINÁMICO DE ESTADÍSTICAS
-    val stats by remember(comentarios.size) { // Recalcula si la lista cambia de tamaño
+
+    val stats by remember(comentarios.size) {
         derivedStateOf { calculateStatistics(comentarios) }
     }
 
     val notaPromedio = stats.averageNote
     val totalComentarios = stats.totalCount
     val distributionMap = stats.distribution
-
-    // Las notas a mostrar en el orden 5, 4, 3, 2, 1
     val notasDistribucion = listOf(5, 4, 3, 2, 1)
-    // Gestos de deslizamiento (para volver atrás)
+
     val gestureModifier = Modifier.pointerInput(Unit) {
         detectHorizontalDragGestures { _, dragAmount ->
             if (dragAmount > 30) onVolver()
@@ -60,13 +294,13 @@ fun CalificationPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(fondoNegro)
+            .background(bgSoft)
             .then(gestureModifier)
             .windowInsetsPadding(WindowInsets.statusBars)
             .padding(horizontal = 16.dp, vertical = 5.dp),
         verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
-        // 1️⃣ Fila: Botón volver
+        // 🔙 Botón volver
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,31 +309,28 @@ fun CalificationPage(
         ) {
             IconButton(onClick = onVolver) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_arrow_left), // ícono de flecha atrás
+                    painter = painterResource(R.drawable.ic_arrow_left),
                     contentDescription = "Volver",
-                    tint = verde
+                    tint = bluePrimary
                 )
             }
         }
 
-        // 2️⃣ Fila: Nota general y estrellas
+        // ⭐ Promedio
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(2f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(3.dp)
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = String.format("%.1f", notaPromedio),
-                color = Color.White,
+                color = bluePrimary,
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            Row(
-                horizontalArrangement = Arrangement.Center
-            ) {
+            Row {
                 repeat(5) { i ->
                     val filled = i < notaPromedio.roundToInt()
                     Icon(
@@ -107,7 +338,7 @@ fun CalificationPage(
                             if (filled) R.drawable.ic_star_full else R.drawable.ic_star_empty
                         ),
                         contentDescription = null,
-                        tint = amarilloEstrella,
+                        tint = starYellow,
                         modifier = Modifier.size(30.dp)
                     )
                 }
@@ -115,79 +346,72 @@ fun CalificationPage(
 
             Text(
                 text = "$totalComentarios comentarios",
-                color = Color.Gray,
+                color = bluePrimary.copy(alpha = 0.7f),
                 fontSize = 14.sp
             )
         }
 
-        // 3️⃣ Fila: Barras de distribución de notas
+        // 📊 Barras de distribución
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(3f),
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // Calculamos el conteo máximo para normalizar el ancho de las barras
             val maxConteo = distributionMap.values.maxOrNull()?.toFloat() ?: 1f
 
             notasDistribucion.forEach { nota ->
-                // Obtenemos el conteo real de la nota
                 val conteo = distributionMap[nota] ?: 0
+                val ancho = if (maxConteo > 0) conteo / maxConteo else 0f
 
-                // Si maxConteo es 0 (no hay comentarios), evitamos la división por cero
-                val ancho = if (maxConteo > 0) conteo.toFloat() / maxConteo else 0f
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 2.dp)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "$nota",
-                        color = Color.White,
+                        color = bluePrimary,
                         fontSize = 14.sp,
                         modifier = Modifier.width(20.dp)
                     )
                     Box(
-                        // Llenamos el ancho en base a la proporción calculada
                         modifier = Modifier
                             .fillMaxWidth(ancho)
-                            .height(14.dp)
+                            .height(12.dp)
                             .clip(RoundedCornerShape(6.dp))
-                            .background(verde)
+                            .background(blueLight)
                     )
                 }
             }
         }
 
-        // 4️⃣ Fila: Comentarios
+        // 💬 Lista de comentarios
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(5f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(comentarios.size) { index ->
                 val c = comentarios[index]
+
                 Surface(
-                    color = verdeClaro.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(12.dp),
-                    tonalElevation = 2.dp,
-                    shadowElevation = 2.dp,
+                    color = Color.White,
+                    shape = RoundedCornerShape(14.dp),
+                    tonalElevation = 3.dp,
+                    shadowElevation = 3.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
+                    Column(modifier = Modifier.padding(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Imagen o inicial
+                                // Avatar
                                 Box(
                                     modifier = Modifier
                                         .size(40.dp)
                                         .clip(CircleShape)
-                                        .background(verde),
+                                        .background(blueAvatar),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
@@ -199,7 +423,6 @@ fun CalificationPage(
 
                                 Spacer(modifier = Modifier.width(8.dp))
 
-                                // Estrellas + nota
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     repeat(5) { i ->
                                         val filled = i < c.nota.roundToInt()
@@ -208,31 +431,31 @@ fun CalificationPage(
                                                 if (filled) R.drawable.ic_star_full else R.drawable.ic_star_empty
                                             ),
                                             contentDescription = null,
-                                            tint = amarilloEstrella,
+                                            tint = starYellow,
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = String.format("%.1f", c.nota),
-                                        color = Color.White,
+                                        color = bluePrimary,
                                         fontSize = 14.sp
                                     )
                                 }
                             }
 
-                            // Fecha
                             Text(
                                 text = c.fecha,
-                                color = Color.Gray,
+                                color = bluePrimary.copy(alpha = 0.6f),
                                 fontSize = 12.sp
                             )
                         }
 
                         Spacer(modifier = Modifier.height(6.dp))
+
                         Text(
                             text = c.comentario,
-                            color = Color.White,
+                            color = bluePrimary,
                             fontSize = 14.sp
                         )
                     }
@@ -240,7 +463,7 @@ fun CalificationPage(
             }
         }
 
-        // 5️⃣ Fila: Botón comentar
+        // 📝 Botón comentar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -249,7 +472,7 @@ fun CalificationPage(
         ) {
             Button(
                 onClick = { /* abrir diálogo */ },
-                colors = ButtonDefaults.buttonColors(containerColor = verde)
+                colors = ButtonDefaults.buttonColors(containerColor = buttonBlue)
             ) {
                 Text("Comentar", color = Color.White)
             }

@@ -11,8 +11,19 @@ val sampleTags = listOf(
 )
 
 val sampleRestaurants = listOf(
+
     RestaurantEntity(
         id = 1,
+        name = "SushiZen",
+        ubication = "Mall Costanera",
+        description = "Sushi fresco y ramen artesanal.",
+        phone = "+56 9 9876 5432",
+        imageUrl = "https://tofuu.getjusto.com/orioneat-local/resized2/dJaZenAY8aDrQtXwy-800-x.webp",
+        score = 4.8f,
+        tagId = 2
+    ),
+    RestaurantEntity(
+        id = 2,
         name = "La Trattoria",
         ubication = "Av. Italia 123",
         description = "Comida italiana tradicional",
@@ -20,16 +31,6 @@ val sampleRestaurants = listOf(
         imageUrl = "https://picsum.photos/200/100",
         score = 4.6f,
         tagId = 1
-    ),
-    RestaurantEntity(
-        id = 2,
-        name = "SushiZen",
-        ubication = "Mall Costanera",
-        description = "Sushi fresco y ramen artesanal",
-        phone = "+56 9 9876 5432",
-        imageUrl = "https://picsum.photos/200/101",
-        score = 4.8f,
-        tagId = 2
     ),
     RestaurantEntity(
         id = 3,
