@@ -1,7 +1,6 @@
 package com.example.menureview.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,15 +17,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ElevatedCard
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.menureview.R
-import com.example.menureview.data.daos.UserDao
 import com.example.menureview.ui.components.MapaButton
 import com.example.menureview.ui.components.NotificationButton
 import com.example.menureview.ui.components.ProfileMenuButton
 import com.example.menureview.viewmodel.UserViewModel
-import com.example.menureview.viewmodel.UserViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

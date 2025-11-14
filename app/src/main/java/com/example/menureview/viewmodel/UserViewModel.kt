@@ -13,13 +13,6 @@ data class AuthState(
     val exito: Boolean = false
 
 )
-data class UserState(
-    val usuarios: List<UserEntity> = emptyList(),
-    val id: Int = 0,
-    val nombre: String = "",
-    val email: String = "",
-    val pass: String = "",
-)
 
 class UserViewModel(
     private val userDao: UserDao
@@ -29,15 +22,15 @@ class UserViewModel(
     val state: StateFlow<AuthState> = _state
 
     // Datos de muestra
-    private val sampleUsers = listOf(
-        UserEntity(1, "Rodrigo", "rodrigo@gmail.com", "1234", null),
-        UserEntity(2, "María", "maria@gmail.com", "abcd", null),
-    )
+//    private val sampleUsers = listOf(
+//        UserEntity(1, "Rodrigo", "rodrigo@gmail.com", "1234", null),
+//        UserEntity(2, "María", "maria@gmail.com", "abcd", null),
+//    )
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
             //val user = sampleUsers.find { it.email == email && it.pass == password } //Bueno
-            val user = userDao.getByEmail(email) //BD
+            val user = userDao.getByEmail_Pass(email, password) //BD
             if (user != null) {
                 _state.value = AuthState(usuarioActual = user, exito = true)
             } else {

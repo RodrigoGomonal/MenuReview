@@ -59,6 +59,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback { // <-- Implementa
             googleMap.isMyLocationEnabled = true
         } catch (e: SecurityException) {
             // Esto no debería suceder si checkLocationPermission se ejecuta primero
+            e.printStackTrace()
         }
     }
 

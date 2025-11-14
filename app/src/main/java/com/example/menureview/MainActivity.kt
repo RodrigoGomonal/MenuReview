@@ -1,6 +1,5 @@
 package com.example.menureview
 
-import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.example.menureview.data.db.AppDatabase
 import com.example.menureview.viewmodel.UserViewModel
-import com.google.android.gms.maps.OnMapReadyCallback
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

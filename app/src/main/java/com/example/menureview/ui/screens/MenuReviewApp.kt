@@ -1,19 +1,13 @@
 package com.example.menureview
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.menureview.data.daos.UserDao
-import com.example.menureview.data.db.AppDatabase
 import com.example.menureview.ui.components.AppDrawer
 import com.example.menureview.ui.screens.*
 import com.example.menureview.viewmodel.UserViewModel

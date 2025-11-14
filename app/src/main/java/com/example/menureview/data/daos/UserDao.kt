@@ -19,9 +19,10 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE id = :id")
     suspend fun getById(id: Int): UserEntity?
 
+    @Query("SELECT * FROM users WHERE email = :email and pass = :pass LIMIT 1")
+    suspend fun getByEmail_Pass(email: String, pass: String): UserEntity?
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     suspend fun getByEmail(email: String): UserEntity?
-
 
     @Query("DELETE FROM users WHERE id = :id")
     suspend fun deleteById(id: Int)

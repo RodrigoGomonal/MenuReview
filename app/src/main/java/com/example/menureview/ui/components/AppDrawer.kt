@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 @Composable
 
 fun AppDrawer(
-    currentScreen: String,
+    //currentScreen: String,
     onNavigateTo: (route: String) -> Unit,
     showDrawer: Boolean,
     navController: NavController,

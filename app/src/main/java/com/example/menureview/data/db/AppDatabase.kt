@@ -1,8 +1,6 @@
 package com.example.menureview.data.db
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.menureview.data.daos.CommentDao
 import com.example.menureview.data.daos.RestaurantDao
