@@ -47,6 +47,9 @@ android {
 
 dependencies {
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.foundation)
     val room_version = "2.8.3" // Reemplaza con la versión más reciente
 
     implementation(libs.androidx.core.ktx)
@@ -80,6 +83,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     // Si necesitas funcionalidades de ubicación (GPS)
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    // Google Maps para Jetpack Compose
+    implementation("com.google.maps.android:maps-compose:4.2.0")
 
     implementation(libs.coil.compose)
 }

@@ -7,33 +7,93 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.menureview.R
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
+import android.Manifest
+import kotlin.getValue
+import kotlin.lazy
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import android.Manifest
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback { // <-- Implementar OnMapReadyCallback
+//class MapsActivity : AppCompatActivity(), OnMapReadyCallback { // <-- Implementar OnMapReadyCallback
+//
+//    private lateinit var googleMap: GoogleMap
+//
+//    // Manejador moderno de solicitud de permisos
+//    private val locationPermissionRequest = registerForActivityResult(
+//        ActivityResultContracts.RequestPermission()
+//    ) { isGranted: Boolean ->
+//        if (isGranted) {
+//            enableMyLocation()
+//        } else {
+//            Toast.makeText(this, "Permiso de ubicación denegado.", Toast.LENGTH_LONG).show()
+//        }
+//    }
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//
+//        // 1. Carga el layout XML que contiene el mapa (R.layout.activity_maps).
+//        setContentView(R.layout.activity_maps)
+//
+//        val mapFragment = supportFragmentManager
+//            .findFragmentById(R.id.map) as SupportMapFragment
+//        mapFragment.getMapAsync(this)
+//    }
+//
+//    override fun onMapReady(map: GoogleMap) {
+//        googleMap = map
+//
+//        // Configuración inicial de la cámara
+//        val defaultLocation  = LatLng(-33.4489, -70.6693) // Santiago de Chile
+//        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation , 10f))
+//        googleMap.addMarker(MarkerOptions().position(defaultLocation ).title("¡Estamos aquí!"))
+//
+//        // Inicia el proceso de verificación y solicitud de GPS
+//        checkLocationPermission()
+//    }
+//    // Función para habilitar la capa del GPS
+//    private fun enableMyLocation() {
+//        try {
+//            googleMap.isMyLocationEnabled = true
+//        } catch (e: SecurityException) {
+//            // Esto no debería suceder si checkLocationPermission se ejecuta primero
+//            e.printStackTrace()
+//        }
+//    }
+//    // Función para verificar y solicitar el permiso
+//    private fun checkLocationPermission() {
+//        when {
+//            ContextCompat.checkSelfPermission(
+//                this,
+//                Manifest.permission.ACCESS_FINE_LOCATION
+//            ) == PackageManager.PERMISSION_GRANTED -> {
+//                // Permiso ya concedido
+//                enableMyLocation()
+//            }
+//            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+//                // Muestra una explicación antes de solicitar
+//                Toast.makeText(this, "Necesitamos tu ubicación para mostrarla en el mapa.", Toast.LENGTH_LONG).show()
+//                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+//            }
+//            else -> {
+//                // Solicita el permiso directamente
+//                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+//            }
+//        }
+//    }
+//}
+
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
 
-    // Manejador moderno de solicitud de permisos
-    private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            enableMyLocation()
-        } else {
-            Toast.makeText(this, "Permiso de ubicación denegado.", Toast.LENGTH_LONG).show()
-        }
+    private val fusedLocation by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // 1. Carga el layout XML que contiene el mapa (R.layout.activity_maps).
         setContentView(R.layout.activity_maps)
 
         val mapFragment = supportFragmentManager
@@ -44,42 +104,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback { // <-- Implementa
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        // Configuración inicial de la cámara
-        val chileLocation = LatLng(-33.4489, -70.6693) // Santiago de Chile
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(chileLocation, 10f))
-        googleMap.addMarker(MarkerOptions().position(chileLocation).title("¡Estamos aquí!"))
-
-        // Inicia el proceso de verificación y solicitud de GPS
         checkLocationPermission()
+        updateLocationOnMap()
     }
-    // Función para habilitar la capa del GPS
-    private fun enableMyLocation() {
+
+    private fun updateLocationOnMap() {
         try {
-            googleMap.isMyLocationEnabled = true
-        } catch (e: SecurityException) {
-            // Esto no debería suceder si checkLocationPermission se ejecuta primero
-            e.printStackTrace()
-        }
+            fusedLocation.lastLocation.addOnSuccessListener { location ->
+
+                val target = if (location != null) {
+                    LatLng(location.latitude, location.longitude)
+                } else {
+                    LatLng(-33.4489, -70.6693) // Default Santiago
+                }
+
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 15f))
+                googleMap.addMarker(MarkerOptions().position(target).title("Tu ubicación"))
+            }
+        } catch (_: SecurityException) {}
     }
-    // Función para verificar y solicitar el permiso
+
+    private fun enableMyLocation() {
+        try { googleMap.isMyLocationEnabled = true }
+        catch (_: SecurityException) {}
+    }
+
     private fun checkLocationPermission() {
         when {
             ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                // Permiso ya concedido
                 enableMyLocation()
             }
+
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                // Muestra una explicación antes de solicitar
-                Toast.makeText(this, "Necesitamos tu ubicación para mostrarla en el mapa.", Toast.LENGTH_LONG).show()
-                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                Toast.makeText(this, "Se necesita la ubicación.", Toast.LENGTH_LONG).show()
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
-            else -> {
-                // Solicita el permiso directamente
-                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
+
+            else -> requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) enableMyLocation()
+        }
 }

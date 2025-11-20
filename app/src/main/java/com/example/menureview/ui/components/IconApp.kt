@@ -13,7 +13,7 @@ fun AppIconButton(){
         }
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_logo),
+            painter = painterResource(R.drawable.img_menureview),
             contentDescription = "Selected icon button"
         )
     }

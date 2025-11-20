@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -13,72 +12,53 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.statusBarsPadding
 import com.example.menureview.R
-import com.example.menureview.ui.components.MapaButton
-import com.example.menureview.ui.components.NotificationButton
-import com.example.menureview.ui.components.ProfileMenuButton
 import com.example.menureview.viewmodel.UserViewModel
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.shadow
+import androidx.navigation.NavController
+import com.example.menureview.ui.components.GoogleMapCard
 import com.example.menureview.ui.components.RankingSection
+import com.example.menureview.ui.theme.MenuReviewTheme
+import com.example.menureview.viewmodel.LocationViewModel
+import com.google.android.gms.maps.model.LatLng
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainPage(
-    viewModel: UserViewModel
+    viewModel: UserViewModel,
+    locationViewModel: LocationViewModel,
+    navController: NavController
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFDCEAF2)) // Fondo más moderno y suave
-            .statusBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
 
-        // ----- TOP BAR -----
-        Row(
+    val lastKnown = locationViewModel.lastKnownLocation
+    val hasRealLocation = locationViewModel.hasRealLocation
+    MenuReviewTheme{
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .background( color = MaterialTheme.colorScheme.onSurface)
+                .verticalScroll(rememberScrollState())
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo),
-                contentDescription = "Logo",
-                modifier = Modifier.size(48.dp)
+            Spacer(Modifier.height(6.dp))
+
+            SearchBarSection()
+            Spacer(Modifier.height(20.dp))
+
+            RankingSection(modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(20.dp))
+
+            NearYouSection(
+                lastKnownLocation = lastKnown,
+                hasRealLocation = hasRealLocation,
+                onOpenFullMap = { navController.navigate("FullMap") }
             )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                NotificationButton()
-                Spacer(modifier = Modifier.width(8.dp))
-                ProfileMenuButton(viewModel)
-            }
+            Spacer(Modifier.height(20.dp))
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ----- BUSCADOR -----
-        SearchBarSection()
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ----- RANKING -----
-        RankingSection(
-            modifier = Modifier
-                .weight(4f)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ----- CERCA DE TI -----
-        NearYouSection(
-            modifier = Modifier
-                .weight(3f)
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 
@@ -99,7 +79,7 @@ fun SearchBarSection() {
         placeholder = { Text("Buscar restaurantes...", fontSize = 14.sp) },
         shape = RoundedCornerShape(14.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color(0xFFA68776),
+            focusedBorderColor = Color(0xFFEFB810),
             unfocusedBorderColor = Color(0xFFCCCCCC),
         ),
         modifier = Modifier
@@ -110,28 +90,32 @@ fun SearchBarSection() {
     )
 }
 
-
 @Composable
-fun NearYouSection(modifier: Modifier = Modifier) {
+fun NearYouSection(
+    lastKnownLocation: LatLng,
+    onOpenFullMap: () -> Unit,
+    modifier: Modifier = Modifier,
+    hasRealLocation: Boolean,
+) {
     ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50)),
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(20.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(Modifier.padding(16.dp)) {
+
             Text(
-                text = "Buscar Restaurantes Cercanos",
+                "Restaurantes Cercanos",
                 fontSize = 20.sp,
-                color = Color(0xFF533E25),
-                style = MaterialTheme.typography.titleLarge
+                color = Color(0xFF333333)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-            MapaButton()
+            Spacer(Modifier.height(12.dp))
+
+            GoogleMapCard(
+                lastKnownLocation = lastKnownLocation,
+                hasRealLocation = hasRealLocation
+            )
         }
     }
 }
