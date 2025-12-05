@@ -50,6 +50,14 @@ android {
     buildFeatures {
         compose = true
     }
+    // Configuración vital para evitar conflictos de licencias en los Tests
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+    }
 }
 
 dependencies {
@@ -98,4 +106,20 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+
+    // === TESTING UNITARIO (Lógica) ===
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation("io.mockk:mockk:1.13.9")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // === TESTING UI (Instrumentado) ===
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    // Solución para mockear en Android (UI)
+    androidTestImplementation("io.mockk:mockk-android:1.13.9")
+}
+
+// Habilitar JUnit 5 para Kotest
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }

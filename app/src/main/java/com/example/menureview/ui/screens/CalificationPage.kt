@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -17,37 +18,47 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.menureview.R
+import com.example.menureview.viewmodel.ComentarioViewModel
+import com.example.menureview.viewmodel.UserViewModel
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalificationPage(
+    restauranteId: Int,
+    comentarioViewModel: ComentarioViewModel,
+    userViewModel: UserViewModel,
     onBack: () -> Unit = {}
 ) {
-    val bgSoft = Color(0xFFDCEAF2)               // Nuevo fondo suave
+    val state by comentarioViewModel.state.collectAsState()
+    val userState by userViewModel.state.collectAsState()
+    val usuario = userState.usuarioActual
+
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    val bgSoft = Color(0xFFDCEAF2)
     val starYellow = Color(0xFFFFD700)
-    val bluePrimary = Color(0xFF4CAF50)          // Azul moderno
-    val blueLight = Color(0xFF4CAF50)            // Azul claro para barras
-    val blueAvatar = Color(0xFF4CAF50)           // Azul más oscuro para avatar
-    val buttonBlue = Color(0xFF4CAF50)           // Azul elegante para botón
+    val bluePrimary = Color(0xFF4CAF50)
+    val blueLight = Color(0xFF4CAF50).copy(alpha = 0.3f)
+    val blueAvatar = Color(0xFF4CAF50)
+    val buttonBlue = Color(0xFF4CAF50)
 
-    var comentarios = remember {
-        mutableStateListOf(
-            ComentarioUsuario("Ana", 5f, "Excelente atención y comida!", "12/10/2025"),
-            ComentarioUsuario("Pedro", 4f, "Muy bueno, aunque algo lento el servicio.", "10/10/2025"),
-            ComentarioUsuario("Lucía", 3.5f, "Bien, pero esperaba más variedad.", "07/10/2025")
-        )
+    // Cargar comentarios
+    LaunchedEffect(restauranteId) {
+        comentarioViewModel.loadComentariosByRestaurante(restauranteId)
     }
 
-    val stats by remember(comentarios.size) {
-        derivedStateOf { calculateStatistics(comentarios) }
+    // Mostrar toast de éxito
+    LaunchedEffect(state.operacionExitosa) {
+        if (state.operacionExitosa) {
+            comentarioViewModel.resetState()
+        }
     }
 
-    val notaPromedio = stats.averageNote
-    val totalComentarios = stats.totalCount
-    val distributionMap = stats.distribution
+    val notaPromedio = state.promedioCalificacion
+    val totalComentarios = state.comentarios.size
+    val distribution = comentarioViewModel.getDistribution()
     val notasDistribucion = listOf(5, 4, 3, 2, 1)
 
     val gestureModifier = Modifier.pointerInput(Unit) {
@@ -65,7 +76,7 @@ fun CalificationPage(
             .padding(horizontal = 16.dp, vertical = 5.dp),
         verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
-        // 🔙 Botón volver
+        // Botón volver
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,7 +92,7 @@ fun CalificationPage(
             }
         }
 
-        // ⭐ Promedio
+        // Promedio de calificación
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +100,7 @@ fun CalificationPage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = String.format("%.1f", notaPromedio),
+                text = if (notaPromedio > 0) String.format("%.1f", notaPromedio) else "N/A",
                 color = bluePrimary,
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold
@@ -116,17 +127,17 @@ fun CalificationPage(
             )
         }
 
-        // 📊 Barras de distribución
+        // Barras de distribución
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(3f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            val maxConteo = distributionMap.values.maxOrNull()?.toFloat() ?: 1f
+            val maxConteo = distribution.values.maxOrNull()?.toFloat() ?: 1f
 
             notasDistribucion.forEach { nota ->
-                val conteo = distributionMap[nota] ?: 0
+                val conteo = distribution[nota] ?: 0
                 val ancho = if (maxConteo > 0) conteo / maxConteo else 0f
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -138,7 +149,7 @@ fun CalificationPage(
                     )
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(ancho)
+                            .fillMaxWidth(ancho.coerceAtLeast(0.05f))
                             .height(12.dp)
                             .clip(RoundedCornerShape(6.dp))
                             .background(blueLight)
@@ -147,88 +158,110 @@ fun CalificationPage(
             }
         }
 
-        // 💬 Lista de comentarios
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(5f),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(comentarios.size) { index ->
-                val c = comentarios[index]
-
-                Surface(
-                    color = Color.White,
-                    shape = RoundedCornerShape(14.dp),
-                    tonalElevation = 3.dp,
-                    shadowElevation = 3.dp,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Avatar
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(blueAvatar),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = c.usuario.first().uppercase(),
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
+        // Loading o error
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(5f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (state.error != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(5f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = state.error ?: "Error", color = Color.Red)
+            }
+        } else {
+            // Lista de comentarios
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(5f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(state.comentarios) { comentario ->
+                    Surface(
+                        color = Color.White,
+                        shape = RoundedCornerShape(14.dp),
+                        tonalElevation = 3.dp,
+                        shadowElevation = 3.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    repeat(5) { i ->
-                                        val filled = i < c.nota.roundToInt()
-                                        Icon(
-                                            painter = painterResource(
-                                                if (filled) R.drawable.ic_star_full else R.drawable.ic_star_empty
-                                            ),
-                                            contentDescription = null,
-                                            tint = starYellow,
-                                            modifier = Modifier.size(16.dp)
+                                    // Avatar
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(blueAvatar),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "U",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(4.dp))
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        repeat(5) { i ->
+                                            val filled = i < comentario.calificacion
+                                            Icon(
+                                                painter = painterResource(
+                                                    if (filled) R.drawable.ic_star_full
+                                                    else R.drawable.ic_star_empty
+                                                ),
+                                                contentDescription = null,
+                                                tint = starYellow,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = comentario.calificacion.toString(),
+                                            color = bluePrimary,
+                                            fontSize = 14.sp
+                                        )
+                                    }
+                                }
+
+                                comentario.fecha?.let { fecha ->
                                     Text(
-                                        text = String.format("%.1f", c.nota),
-                                        color = bluePrimary,
-                                        fontSize = 14.sp
+                                        text = fecha.take(10), // Solo fecha YYYY-MM-DD
+                                        color = bluePrimary.copy(alpha = 0.6f),
+                                        fontSize = 12.sp
                                     )
                                 }
                             }
 
+                            Spacer(modifier = Modifier.height(6.dp))
+
                             Text(
-                                text = c.fecha,
-                                color = bluePrimary.copy(alpha = 0.6f),
-                                fontSize = 12.sp
+                                text = comentario.comentario,
+                                color = bluePrimary,
+                                fontSize = 14.sp
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = c.comentario,
-                            color = bluePrimary,
-                            fontSize = 14.sp
-                        )
                     }
                 }
             }
         }
 
-        // 📝 Botón comentar
+        // Botón comentar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -236,50 +269,89 @@ fun CalificationPage(
             contentAlignment = Alignment.Center
         ) {
             Button(
-                onClick = { /* abrir diálogo */ },
-                colors = ButtonDefaults.buttonColors(containerColor = buttonBlue)
+                onClick = {
+                    if (usuario != null) {
+                        showAddDialog = true
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = buttonBlue),
+                enabled = usuario != null
             ) {
-                Text("Comentar", color = Color.White)
+                Text(if (usuario != null) "Comentar" else "Inicia sesión para comentar",
+                    color = Color.White)
             }
         }
     }
+
+    // Dialog para agregar comentario
+    if (showAddDialog && usuario != null) {
+        AddComentarioDialog(
+            onDismiss = { showAddDialog = false },
+            onSubmit = { texto, calificacion ->
+                comentarioViewModel.createComentario(
+                    usuarioId = usuario.id,
+                    restauranteId = restauranteId,
+                    texto = texto,
+                    calificacion = calificacion
+                )
+                showAddDialog = false
+            }
+        )
+    }
 }
 
-data class ComentarioUsuario(
-    val usuario: String,
-    val nota: Float,
-    val comentario: String,
-    val fecha: String
-)
+@Composable
+fun AddComentarioDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (String, Int) -> Unit
+) {
+    var texto by remember { mutableStateOf("") }
+    var calificacion by remember { mutableStateOf(5) }
 
-// Fuera de CalificationPage
-data class CalificationStatistics(
-    val averageNote: Float,
-    val totalCount: Int,
-    val distribution: Map<Int, Int> // Mapa: Nota (5, 4, 3...) -> Conteo
-)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Agregar reseña") },
+        text = {
+            Column {
+                Text("Calificación:")
+                Row {
+                    (1..5).forEach { star ->
+                        IconButton(onClick = { calificacion = star }) {
+                            Icon(
+                                painter = painterResource(
+                                    if (star <= calificacion) R.drawable.ic_star_full
+                                    else R.drawable.ic_star_empty
+                                ),
+                                contentDescription = null,
+                                tint = Color(0xFFFFD700)
+                            )
+                        }
+                    }
+                }
 
-fun calculateStatistics(comentarios: List<ComentarioUsuario>): CalificationStatistics {
-    if (comentarios.isEmpty()) {
-        return CalificationStatistics(0f, 0, mapOf(5 to 0, 4 to 0, 3 to 0, 2 to 0, 1 to 0))
-    }
+                Spacer(modifier = Modifier.height(8.dp))
 
-    val totalSum = comentarios.sumOf { it.nota.toDouble() }
-    val totalCount = comentarios.size
-    val averageNote = (totalSum / totalCount).toFloat()
-
-    // Inicializa el mapa para asegurar que todas las notas de 1 a 5 estén presentes, incluso si el conteo es 0.
-    val distribution = mutableMapOf<Int, Int>().apply {
-        (1..5).forEach { put(it, 0) }
-    }
-
-    // Cuenta las notas (redondeando hacia abajo, ej: 4.8 cuenta para 4, 5.0 cuenta para 5)
-    comentarios.forEach { comentario ->
-        // Redondeamos la nota del comentario al entero más cercano (ej: 4.3 -> 4, 4.8 -> 5)
-        val roundedNote = comentario.nota.roundToInt().coerceIn(1, 5)
-        distribution[roundedNote] = distribution.getValue(roundedNote) + 1
-    }
-
-    // Devolvemos las estadísticas
-    return CalificationStatistics(averageNote, totalCount, distribution.toMap())
+                OutlinedTextField(
+                    value = texto,
+                    onValueChange = { texto = it },
+                    label = { Text("Escribe tu reseña") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSubmit(texto, calificacion) },
+                enabled = texto.isNotBlank()
+            ) {
+                Text("Publicar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

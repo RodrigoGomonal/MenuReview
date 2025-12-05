@@ -3,7 +3,7 @@ package com.example.menureview.data.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TagEntity(
-    val id: Int = 0,
-    val nombre: String
+data class RestauranteTagEntity(
+    val restaurante_id: Int,
+    val tag_id: Int
 )

@@ -1,5 +1,6 @@
 package com.example.menureview.ui.screens
 
+
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,26 +18,49 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.menureview.R
-import com.example.menureview.data.db.sampleRestaurants
-import com.example.menureview.data.models.RestaurantEntity
 import coil.compose.AsyncImage
+import com.example.menureview.R
+import com.example.menureview.viewmodel.ComentarioViewModel
+import com.example.menureview.viewmodel.RestauranteViewModel
+import androidx.compose.ui.res.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilRestaurantePage(
     navController: NavHostController,
-    restaurant: RestaurantEntity = sampleRestaurants[0]   // ← usa uno de muestra
+    restauranteViewModel: RestauranteViewModel,
+    comentarioViewModel: ComentarioViewModel
 ) {
-    var showContactDialog by remember { mutableStateOf(false) }
+    val restauranteState by restauranteViewModel.state.collectAsState()
+    val comentarioState by comentarioViewModel.state.collectAsState()
+    val restaurant = restauranteState.restauranteSeleccionado
 
+    var showContactDialog by remember { mutableStateOf(false) }
     val accent = Color(0xFF4CAF50)
     val bgSoft = Color(0xFFDCEAF2)
+    val context = LocalContext.current
+
+    // Cargar comentarios del restaurante
+    LaunchedEffect(restaurant?.id) {
+        restaurant?.id?.let {
+            comentarioViewModel.loadComentariosByRestaurante(it)
+        }
+    }
+
+    if (restaurant == null) {
+        // Mostrar loading o mensaje
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     Column(
         modifier = Modifier
@@ -46,8 +70,7 @@ fun PerfilRestaurantePage(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
-        // ----------------------- Imagen grande -----------------------
+        // Imagen grande del restaurante
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -58,17 +81,16 @@ fun PerfilRestaurantePage(
             shadowElevation = 6.dp
         ) {
             AsyncImage(
-                model = restaurant.imageUrl,
-                contentDescription = restaurant.name,
+                model = restaurant.imagenurl ?: "https://via.placeholder.com/400x220",
+                contentDescription = restaurant.nombre,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
         }
 
-        // ----------------------- Info principal -----------------------
+        // Info principal
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Columna izquierda (nombre, ubicación)
@@ -79,18 +101,19 @@ fun PerfilRestaurantePage(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = restaurant.name,
+                    text = restaurant.nombre,
                     style = MaterialTheme.typography.titleLarge,
                     color = Color(0xFF656C73),
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = restaurant.ubication,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = restaurant.ubicacion ?: "Sin ubicación",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF656C73)
                 )
             }
 
-            // Columna derecha (valoración, votos, comentarios)
+            // Columna derecha (valoración)
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -98,29 +121,40 @@ fun PerfilRestaurantePage(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.End
             ) {
+                val promedio = comentarioState.promedioCalificacion
+                val totalComentarios = comentarioState.comentarios.size
+
                 Text(
-                    text = "⭐ ${restaurant.score}",
+                    text = if (promedio > 0) "⭐ ${String.format("%.1f", promedio)}" else "⭐ N/A",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color(0xFFD9B88F),
                     fontWeight = FontWeight.Bold
                 )
-                Text(text = "256 votaciones", style = MaterialTheme.typography.bodySmall)
-                Text(text = "134 comentarios", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = "$totalComentarios comentarios",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF656C73)
+                )
             }
         }
 
-        // ----------------------- Acciones redondas -----------------------
+        // Acciones redondas
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            val context = LocalContext.current
             ActionCircle(
                 icon = R.drawable.ic_location,
                 text = "Ubicación",
                 color = accent,
-                onClick = { val intent = Intent(context, MapsActivity::class.java)
-                    context.startActivity(intent) }
+                onClick = {
+                    val intent = Intent(context, MapsActivity::class.java).apply {
+                        putExtra("restaurante_id", restaurant.id)
+                        putExtra("lat", restaurant.latitud)
+                        putExtra("lng", restaurant.longitud)
+                    }
+                    context.startActivity(intent)
+                }
             )
 
             ActionCircle(
@@ -133,33 +167,32 @@ fun PerfilRestaurantePage(
                 icon = R.drawable.ic_camera,
                 text = "Fotos",
                 color = accent
-            ) { /* abrir galería */ }
+            ) { /* TODO: implementar galería */ }
 
             ActionCircle(
                 icon = R.drawable.ic_bubble,
                 text = "Comentarios",
                 color = accent
-            ) { navController.navigate("Calification") }
+            ) {
+                navController.navigate("Calification/${restaurant.id}")
+            }
         }
 
-        // ----------------------- Características -----------------------
+        // Características (tags simulados - TODO: implementar tags reales)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
                 .padding(vertical = 5.dp)
         ) {
-            // Cinta horizontal desplazable
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 5.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // TODO: Cargar tags reales desde la BD
                 val caracteristicas = listOf(
-                    "Restaurante Japones 🎌",
-                    "Bar con música en vivo 🎤",
-                    "Especialidad: Ramen de Cerdo 🍜",
+                    "Restaurante 🍽️",
                     "Ambiente Familiar 👨‍👩‍👧‍👦",
                     "Pet Friendly 🐶",
                     "Delivery Disponible 🚗"
@@ -173,8 +206,7 @@ fun PerfilRestaurantePage(
                     ) {
                         Text(
                             text = caracteristicas[index],
-                            modifier = Modifier
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                             color = Color(0xFF533E25),
                             fontSize = 14.sp
                         )
@@ -183,33 +215,34 @@ fun PerfilRestaurantePage(
             }
         }
 
-        // ----------------------- Descripción -----------------------
+        // Descripción
         Surface(
-            modifier = Modifier.fillMaxWidth().height(210.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp),
             shape = RoundedCornerShape(16.dp),
             color = Color(0xFF4CAF50),
             tonalElevation = 4.dp,
             shadowElevation = 4.dp
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-
                 Text(
-                    text = restaurant.description,
+                    text = "Descripción",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color(0xFF533E25),
                 )
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Text(
-                    text = "Descubre el auténtico sabor japonés con un toque moderno. " +
-                            "En Sakura disfrutarás una experiencia única entre aromas, sabores y cultura oriental.",
+                    text = restaurant.descripcion ?: "Sin descripción disponible",
                     color = Color(0xFF533E25),
+                    fontSize = 14.sp
                 )
             }
         }
     }
 
-    // ----------------------- Modal de contacto -----------------------
+    // Modal de contacto
     if (showContactDialog) {
         AlertDialog(
             onDismissRequest = { showContactDialog = false },
@@ -220,13 +253,16 @@ fun PerfilRestaurantePage(
             },
             title = { Text("Contacto del Restaurante") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Correo: SushiZen@gmail.cl")
-                    Text("Teléfono: ${restaurant.phone}")
-                    Text("Facebook: SushiZen_RestauranteCL")
-                    Text("Instagram: @SushiZen_restaurante")
-
-
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    restaurant.correo?.let {
+                        Text("📧 Correo: $it")
+                    }
+                    restaurant.telefono?.let {
+                        Text("📱 Teléfono: $it")
+                    }
+                    restaurant.ubicacion?.let {
+                        Text("📍 Dirección: $it")
+                    }
                 }
             }
         )
@@ -235,12 +271,10 @@ fun PerfilRestaurantePage(
 
 @Composable
 fun ActionCircle(icon: Int, text: String, color: Color, onClick: () -> Unit) {
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-
         Surface(
             modifier = Modifier
                 .size(60.dp)

@@ -23,11 +23,13 @@ import com.example.menureview.ui.components.GoogleMapCard
 import com.example.menureview.ui.components.RankingSection
 import com.example.menureview.ui.theme.MenuReviewTheme
 import com.example.menureview.viewmodel.LocationViewModel
+import com.example.menureview.viewmodel.RestauranteViewModel
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MainPage(
-    viewModel: UserViewModel,
+    userViewModel: UserViewModel,
+    restauranteViewModel: RestauranteViewModel,
     locationViewModel: LocationViewModel,
     navController: NavController
 ) {
@@ -48,7 +50,14 @@ fun MainPage(
             SearchBarSection()
             Spacer(Modifier.height(20.dp))
 
-            RankingSection(modifier = Modifier.fillMaxWidth())
+            RankingSection(
+                viewModel = restauranteViewModel,
+                modifier = Modifier.fillMaxWidth(),
+                onRestauranteClick = { restaurante ->
+                    restauranteViewModel.selectRestaurante(restaurante)
+                    navController.navigate("PerfilRestaurant")
+                }
+            )
             Spacer(Modifier.height(20.dp))
 
             NearYouSection(
@@ -109,9 +118,7 @@ fun NearYouSection(
                 fontSize = 20.sp,
                 color = Color(0xFF333333)
             )
-
             Spacer(Modifier.height(12.dp))
-
             GoogleMapCard(
                 lastKnownLocation = lastKnownLocation,
                 hasRealLocation = hasRealLocation

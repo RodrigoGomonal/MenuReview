@@ -1,19 +1,10 @@
 package com.example.menureview.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -21,15 +12,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.menureview.data.db.sampleRestaurants
-import com.example.menureview.data.models.RestaurantEntity
+import com.example.menureview.data.models.RestauranteEntity
+import com.example.menureview.viewmodel.RestauranteViewModel
 
 @Composable
-fun RankingSection(modifier: Modifier = Modifier) {
+fun RankingSection(
+    viewModel: RestauranteViewModel,
+    modifier: Modifier = Modifier,
+    onRestauranteClick: (RestauranteEntity) -> Unit = {}
+) {
+    val state by viewModel.state.collectAsState()
 
-    // Ordenar la lista por score de mayor a menor
-    val topRestaurants = remember {
-        sampleRestaurants.sortedByDescending { it.score }
+    // Ordenar restaurantes (por ahora por ID, luego por calificación real)
+    val topRestaurants = remember(state.restaurantes) {
+        state.restaurantes.take(5) // Top 5
     }
 
     ElevatedCard(
@@ -39,9 +35,7 @@ fun RankingSection(modifier: Modifier = Modifier) {
         colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50)),
         shape = RoundedCornerShape(20.dp)
     ) {
-
         Column(modifier = Modifier.padding(16.dp)) {
-
             Text(
                 text = "Ranking de Restaurantes",
                 fontSize = 22.sp,
@@ -51,33 +45,61 @@ fun RankingSection(modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // -------------------
-            // 🔥 SECCIÓN DEL PODIO
-            // -------------------
-            PodiumSection(topRestaurants.take(3))
+            when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(18.dp))
+                state.error != null -> {
+                    Text(
+                        text = "Error al cargar ranking",
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
 
-            // -------------------
-            // 🔥 LISTA NORMAL DESDE EL 4to
-            // -------------------
-            topRestaurants.drop(3).forEachIndexed { index, restaurant ->
-                RankingItem(
-                    position = index + 4,
-                    name = restaurant.name,
-                    score = restaurant.score ?: 0f
-                )
+                topRestaurants.isEmpty() -> {
+                    Text(
+                        text = "No hay restaurantes disponibles",
+                        color = Color(0xFF533E25),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                else -> {
+                    // PODIO TOP 3
+                    PodiumSection(topRestaurants.take(3), onRestauranteClick)
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // LISTA NORMAL DESDE EL 4to
+                    topRestaurants.drop(3).forEachIndexed { index, restaurant ->
+                        RankingItem(
+                            position = index + 4,
+                            name = restaurant.nombre,
+                            score = 4.5f, // TODO: Calcular promedio real de comentarios
+                            onClick = { onRestauranteClick(restaurant) }
+                        )
+                    }
+                }
             }
         }
     }
 }
 
-// -------------------------------------
-// 🔥 COMPOSABLE DEL PODIO TOP 3
-// -------------------------------------
+// COMPOSABLE DEL PODIO TOP 3
 @Composable
-fun PodiumSection(top3: List<RestaurantEntity>) {
-
+fun PodiumSection(
+    top3: List<RestauranteEntity>,
+    onRestauranteClick: (RestauranteEntity) -> Unit
+) {
     val gold = Color(0xFFFFD700)
     val silver = Color(0xFFC0C0C0)
     val bronze = Color(0xFFCD7F32)
@@ -87,13 +109,13 @@ fun PodiumSection(top3: List<RestaurantEntity>) {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Bottom
     ) {
-
         // 2do lugar (izquierda)
         if (top3.size > 1) {
             PodiumItem(
                 place = 2,
                 color = silver,
-                restaurant = top3[1]
+                restaurant = top3[1],
+                onClick = { onRestauranteClick(top3[1]) }
             )
         }
 
@@ -103,7 +125,8 @@ fun PodiumSection(top3: List<RestaurantEntity>) {
                 place = 1,
                 color = gold,
                 restaurant = top3[0],
-                isFirst = true
+                isFirst = true,
+                onClick = { onRestauranteClick(top3[0]) }
             )
         }
 
@@ -112,33 +135,32 @@ fun PodiumSection(top3: List<RestaurantEntity>) {
             PodiumItem(
                 place = 3,
                 color = bronze,
-                restaurant = top3[2]
+                restaurant = top3[2],
+                onClick = { onRestauranteClick(top3[2]) }
             )
         }
     }
 }
 
-// -------------------------------------
-// 🔥 UN ELEMENTO DEL PODIO
-// -------------------------------------
+// UN ELEMENTO DEL PODIO
 @Composable
 fun PodiumItem(
     place: Int,
     color: Color,
-    restaurant: RestaurantEntity,
-    isFirst: Boolean = false
+    restaurant: RestauranteEntity,
+    isFirst: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
-
     val height = if (isFirst) 130.dp else 100.dp
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 4.dp)
     ) {
-
         // Estrella con la nota arriba
         Text(
-            text = "⭐ ${restaurant.score}",
-            fontSize = 18.sp,
+            text = "⭐ 4.5", // TODO: Calcular promedio real
+            fontSize = 16.sp,
             color = Color(0xFFFFC107)
         )
 
@@ -146,20 +168,22 @@ fun PodiumItem(
 
         // Nombre del restaurante
         Text(
-            text = restaurant.name,
-            fontSize = 16.sp,
+            text = restaurant.nombre,
+            fontSize = 14.sp,
             color = Color.Black,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1
         )
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Bloque del podio
+        // Bloque del podio (clickeable)
         Box(
             modifier = Modifier
                 .width(70.dp)
                 .height(height)
-                .background(color, RoundedCornerShape(12.dp)),
+                .background(color, RoundedCornerShape(12.dp))
+                .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -172,34 +196,34 @@ fun PodiumItem(
     }
 }
 
-// ---------------------------------------------------------
-// 🔥 ITEM NORMAL PARA POSICIONES 4, 5, 6...
-// ---------------------------------------------------------
+// ITEM NORMAL PARA POSICIONES 4+
 @Composable
-fun RankingItem(position: Int, name: String, score: Float) {
+fun RankingItem(
+    position: Int,
+    name: String,
+    score: Float,
+    onClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Text(
             text = "$position.",
             fontSize = 20.sp,
             color = Color(0xFF533E25),
             modifier = Modifier.width(32.dp)
         )
-
         Text(
             text = name,
             fontSize = 18.sp,
             color = Color.Black,
             modifier = Modifier.weight(1f)
         )
-
         Text(
-            text = "⭐ $score",
+            text = "⭐ ${String.format("%.1f", score)}",
             fontSize = 16.sp,
             color = Color(0xFFFFC107)
         )

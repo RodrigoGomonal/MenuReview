@@ -110,12 +110,12 @@ fun AppDrawer(
                                 colors = drawerItemsColors
                             )
                             NavigationDrawerItem(
-                                label = { Text("Restaurante") },
-                                selected = currentDestination == "PerfilRestaurant",
+                                label = { Text("Restaurantes") },
+                                selected = currentDestination == "RestaurantesList",
                                 onClick = {
                                     scope.launch {
                                         drawerState.close()
-                                        onNavigateTo("PerfilRestaurant")
+                                        onNavigateTo("RestaurantesList")
                                     }
                                 },
                                 colors = drawerItemsColors
@@ -206,5 +206,4 @@ fun AppDrawer(
             }
         }
     }
-
 }
