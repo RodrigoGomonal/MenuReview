@@ -40,8 +40,8 @@ fun PerfilUserPage(userViewModel: UserViewModel) {
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Nombre: ${state.usuarioActual?.name}")
-            Text("Correo: ${state.usuarioActual?.email}")
+            Text("Nombre: ${state.usuarioActual?.nombre}")
+            Text("Correo: ${state.usuarioActual?.correo}")
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = { /* Editar perfil */ }) {
                 Text("Editar Perfil")

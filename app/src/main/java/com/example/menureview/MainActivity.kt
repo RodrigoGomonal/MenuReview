@@ -10,8 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.room.Room
-import com.example.menureview.data.db.AppDatabase
+import com.example.menureview.viewmodel.AuthRepository
 import com.example.menureview.viewmodel.UserViewModel
 
 class MainActivity : ComponentActivity() {
@@ -22,19 +21,21 @@ class MainActivity : ComponentActivity() {
         }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
-            val database =
-                Room.databaseBuilder(this, AppDatabase::class.java, "menu_review_db").build()
-            val dao = database.userDao()
+            // ✅ Crear AuthRepository
+            val authRepository = AuthRepository(this)
+
+            // ✅ Crear ViewModel con AuthRepository
             val viewModel by viewModels<UserViewModel>(factoryProducer = {
                 object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return UserViewModel(dao) as T
+                        return UserViewModel(authRepository) as T
                     }
                 }
             })
-            MenuReviewApp(viewModel)
 
+            MenuReviewApp(viewModel)
         }
     }
 }

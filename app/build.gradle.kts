@@ -11,7 +11,10 @@ android {
     compileSdk {
         version = release(36)
     }
-
+    buildFeatures {
+        buildConfig = true
+        compose = true  // Si usas Jetpack Compose
+    }
     defaultConfig {
         applicationId = "com.example.menureview"
         minSdk = 25
@@ -31,6 +34,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            // 2. Define la constante para el entorno de Desarrollo (tu IP local/EC2 de prueba)
+            buildConfigField("String", "BASE_URL", "\"http://TU.IP.EC2:3000/\"")
         }
     }
     compileOptions {
@@ -87,4 +94,8 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:4.2.0")
 
     implementation(libs.coil.compose)
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 }
