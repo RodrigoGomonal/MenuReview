@@ -12,8 +12,9 @@
    7. Buscar Restaurantes.
    
 7. Endpoints utilizados (API externa y microservicio)
-   1. Cuenta: GET, POST, PUT
+   1. Cuenta: GET, POST, PUT, DELETE y AUTENTIFICACION.
+   2. Restaurante, Comentario, Tag: GET, POST, PUT Y DELETE.
    
 9. Pasos para ejecutar
-    
+    Descargar el programa y ejecutar con Android studio.
 11. Captura del APK firmado y .jks 
