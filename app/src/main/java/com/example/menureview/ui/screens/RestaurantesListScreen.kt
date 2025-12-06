@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,83 +17,105 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.menureview.ui.theme.MenuReviewTheme
 import com.example.menureview.viewmodel.Restaurante
 import com.example.menureview.viewmodel.RestauranteViewModel
 
 @Composable
 fun RestaurantesListScreen(
     viewModel: RestauranteViewModel,
+    navController: NavHostController,
     onRestauranteClick: (Restaurante) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val bgSoft = Color(0xFFDCEAF2)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bgSoft)
-            .padding(16.dp)
-    ) {
-        // Header
-        Text(
-            text = "Todos los Restaurantes",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color(0xFF656C73),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+    // 1. Escuchar si la pantalla viene con "refresh=true"
+    val refresh by navController.currentBackStackEntry!!
+        .savedStateHandle
+        .getStateFlow("refresh", false)
+        .collectAsState()
 
-        when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
+    //  2. Cuando refresh cambia a true → recargar restaurantes
+    LaunchedEffect(refresh) {
+        if (refresh) {
+            viewModel.loadRestaurantes()
 
-            state.error != null -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = state.error ?: "Error desconocido",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { viewModel.loadRestaurantes() }) {
-                        Text("Reintentar")
+            // limpiar flag
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.set("refresh", false)
+        }
+    }
+    MenuReviewTheme{
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background( color = MaterialTheme.colorScheme.secondary)
+                .padding(16.dp)
+        ) {
+            // Header
+            Text(
+                text = "Lista de Restaurantes",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.background,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
-            }
 
-            state.restaurantes.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No hay restaurantes disponibles")
-                }
-            }
-
-            else -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.restaurantes) { restauranteConCalif ->
-                        RestauranteCardHorizontal(
-                            restauranteConCalif = restauranteConCalif,
-                            onClick = { onRestauranteClick(restauranteConCalif) }
+                state.error != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = state.error ?: "Error desconocido",
+                            color = MaterialTheme.colorScheme.error
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = { viewModel.loadRestaurantes() }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+
+                state.restaurantes.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No hay restaurantes disponibles")
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.restaurantes) { restauranteConCalif ->
+                            RestauranteCardHorizontal(
+                                restauranteConCalif = restauranteConCalif,
+                                onClick = { onRestauranteClick(restauranteConCalif) }
+                            )
+                        }
                     }
                 }
             }
         }
     }
+
 }
 
 @Composable
@@ -181,15 +204,13 @@ fun RestauranteCardHorizontal(
 
                 // Tags desde la BD
                 if (restauranteConCalif.tags.isNotEmpty()) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(vertical = 4.dp)
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
                     ) {
-                        restauranteConCalif.tags.take(2).forEach { tag ->
+                        items(restauranteConCalif.tags) { tag ->
                             TagChip(tag.nombre)
-                        }
-                        if (restauranteConCalif.tags.size > 2) {
-                            TagChip("+${restauranteConCalif.tags.size - 2}")
                         }
                     }
                 } else {

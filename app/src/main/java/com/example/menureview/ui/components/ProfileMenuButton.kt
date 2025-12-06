@@ -30,7 +30,6 @@ import com.example.menureview.ui.screens.RegisterDialog
 import com.example.menureview.viewmodel.UserViewModel
 import com.example.menureview.R
 import com.example.menureview.ui.theme.MenuReviewTheme
-import com.example.menureview.viewmodel.LoginState
 
 @Composable
 fun ProfileMenuButton(userViewModel: UserViewModel) {

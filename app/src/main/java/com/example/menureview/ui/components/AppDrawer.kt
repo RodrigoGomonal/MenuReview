@@ -25,7 +25,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.menureview.R
 import com.example.menureview.ui.theme.MenuReviewTheme
 import kotlinx.coroutines.launch
-import com.example.menureview.ui.components.AppLogo
 import com.example.menureview.viewmodel.UserViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)

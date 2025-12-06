@@ -40,7 +40,7 @@ fun MainPage(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background( color = MaterialTheme.colorScheme.onSurface)
+                .background( color = MaterialTheme.colorScheme.secondary)
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp)

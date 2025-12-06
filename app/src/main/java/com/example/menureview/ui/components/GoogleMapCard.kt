@@ -26,54 +26,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-//@Composable
-//fun GoogleMapCard(
-//    lastKnownLocation: LatLng
-//) {
-//    // Estado de la cámara
-//    val cameraPositionState = rememberCameraPositionState {
-//        position = CameraPosition.fromLatLngZoom(lastKnownLocation, 15f)
-//    }
-//
-//    // Cuando cambia la ubicación -> mover cámara
-//    LaunchedEffect(lastKnownLocation) {
-//        cameraPositionState.animate(
-//            update = CameraUpdateFactory.newLatLngZoom(
-//                lastKnownLocation,
-//                15f
-//            ),
-//            durationMs = 600
-//        )
-//    }
-//
-//    ElevatedCard(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(200.dp)
-//    ) {
-//
-//        GoogleMap(
-//            modifier = Modifier.fillMaxSize(),
-//            cameraPositionState = cameraPositionState,
-//            uiSettings = MapUiSettings(
-//                zoomGesturesEnabled = false,
-//                scrollGesturesEnabled = false,
-//                rotationGesturesEnabled = false,
-//                tiltGesturesEnabled = false,
-//                myLocationButtonEnabled = false
-//            ),
-//            properties = MapProperties(
-//                isMyLocationEnabled = false
-//            )
-//        ) {
-//            Marker(
-//                state = MarkerState(lastKnownLocation),
-//                title = "Tu ubicación"
-//            )
-//        }
-//    }
-//}
-
 @Composable
 fun GoogleMapCard(
     lastKnownLocation: LatLng,

@@ -7,10 +7,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import com.example.menureview.R
-import com.example.menureview.data.Api.ApiClient
-import com.example.menureview.data.Api.RestauranteApiService
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,12 +20,9 @@ import kotlinx.coroutines.launch
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
+
     private val fusedLocation by lazy {
         LocationServices.getFusedLocationProviderClient(this)
-    }
-
-    private val restauranteApi by lazy {
-        ApiClient.create(RestauranteApiService::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,76 +39,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         checkLocationPermission()
         updateLocationOnMap()
-        loadRestaurantMarkers() // ✅ Cargar marcadores de restaurantes
     }
 
     private fun updateLocationOnMap() {
         try {
             fusedLocation.lastLocation.addOnSuccessListener { location ->
+
                 val target = if (location != null) {
                     LatLng(location.latitude, location.longitude)
                 } else {
                     LatLng(-33.4489, -70.6693) // Default Santiago
                 }
 
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 13f))
-                googleMap.addMarker(
-                    MarkerOptions()
-                        .position(target)
-                        .title("Tu ubicación")
-                )
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 15f))
+                googleMap.addMarker(MarkerOptions().position(target).title("Tu ubicación"))
             }
         } catch (_: SecurityException) {}
-    }
-
-    /**
-     * Cargar marcadores de todos los restaurantes desde la BD
-     */
-    private fun loadRestaurantMarkers() {
-        lifecycleScope.launch {
-            try {
-                val response = restauranteApi.getAllRestaurantes()
-
-                if (response.isSuccessful) {
-                    val restaurantes = response.body() ?: emptyList()
-
-                    restaurantes.forEach { restaurante ->
-                        // Solo agregar si tiene coordenadas
-                        if (restaurante.latitud != null && restaurante.longitud != null) {
-                            val position = LatLng(restaurante.latitud, restaurante.longitud)
-
-                            googleMap.addMarker(
-                                MarkerOptions()
-                                    .position(position)
-                                    .title(restaurante.nombre)
-                                    .snippet(restaurante.ubicacion ?: "")
-                            )
-                        }
-                    }
-
-                    android.util.Log.d("MapsActivity", "✅ ${restaurantes.size} marcadores agregados")
-                } else {
-                    Toast.makeText(
-                        this@MapsActivity,
-                        "Error al cargar restaurantes",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("MapsActivity", "❌ Error: ${e.message}")
-                Toast.makeText(
-                    this@MapsActivity,
-                    "Error de conexión: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
     }
 
     private fun enableMyLocation() {
-        try {
-            googleMap.isMyLocationEnabled = true
-        } catch (_: SecurityException) {}
+        try { googleMap.isMyLocationEnabled = true }
+        catch (_: SecurityException) {}
     }
 
     private fun checkLocationPermission() {

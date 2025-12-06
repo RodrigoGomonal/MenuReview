@@ -1,6 +1,5 @@
 package com.example.menureview.ui.screens
 
-
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +26,7 @@ import com.example.menureview.R
 import com.example.menureview.viewmodel.ComentarioViewModel
 import com.example.menureview.viewmodel.RestauranteViewModel
 import androidx.compose.ui.res.painterResource
+import com.example.menureview.ui.theme.MenuReviewTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +41,6 @@ fun PerfilRestaurantePage(
 
     var showContactDialog by remember { mutableStateOf(false) }
     val accent = Color(0xFF4CAF50)
-    val bgSoft = Color(0xFFDCEAF2)
     val context = LocalContext.current
 
     // Cargar comentarios del restaurante
@@ -62,188 +61,191 @@ fun PerfilRestaurantePage(
         return
     }
     val restaurant = restaurantSel.restaurante
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(bgSoft)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Imagen grande del restaurante
-        Surface(
+    MenuReviewTheme{
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp),
-            shape = RoundedCornerShape(20.dp),
-            color = Color(0xFF4CAF50),
-            tonalElevation = 6.dp,
-            shadowElevation = 6.dp
+                .fillMaxSize()
+                .background( color = MaterialTheme.colorScheme.tertiary)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AsyncImage(
-                model = restaurant.imagenurl ?: "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
-                contentDescription = restaurant.nombre,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        // Info principal
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Columna izquierda (nombre, ubicación)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(5.dp),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = restaurant.nombre,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color(0xFF656C73),
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = restaurant.ubicacion ?: "Sin ubicación",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF656C73)
-                )
-            }
-
-            // Columna derecha (valoración)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(5.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.End
-            ) {
-                val promedio = comentarioState.promedioCalificacion
-                val totalComentarios = comentarioState.comentarios.size
-
-                Text(
-                    text = if (promedio > 0) "⭐ ${String.format("%.1f", promedio)}" else "⭐ N/A",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFFD9B88F),
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "$totalComentarios comentarios",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF656C73)
-                )
-            }
-        }
-
-        // Acciones redondas
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            ActionCircle(
-                icon = R.drawable.ic_location,
-                text = "Ubicación",
-                color = accent,
-                onClick = {
-                    val intent = Intent(context, MapsActivity::class.java).apply {
-                        putExtra("restaurante_id", restaurant.id)
-                        putExtra("lat", restaurant.latitud)
-                        putExtra("lng", restaurant.longitud)
-                    }
-                    context.startActivity(intent)
-                }
-            )
-
-            ActionCircle(
-                icon = R.drawable.ic_phone,
-                text = "Llamar",
-                color = accent
-            ) { showContactDialog = true }
-
-            ActionCircle(
-                icon = R.drawable.ic_camera,
-                text = "Fotos",
-                color = accent
-            ) { /* TODO: implementar galería */ }
-
-            ActionCircle(
-                icon = R.drawable.ic_bubble,
-                text = "Comentarios",
-                color = accent
-            ) {
-                navController.navigate("Calification/${restaurant.id}")
-            }
-        }
-
-        // Características (TAGS REALES desde BD)
-        if (restaurantSel.tags.isNotEmpty()) {
-            Column(
+            // Imagen grande del restaurante
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 5.dp)
+                    .height(220.dp),
+                shape = RoundedCornerShape(20.dp),
+                color = Color(0xFF4CAF50),
+                tonalElevation = 6.dp,
+                shadowElevation = 6.dp
             ) {
-                Text(
-                    text = "Características",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF656C73),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 5.dp, bottom = 8.dp)
+                AsyncImage(
+                    model = restaurant.imagenurl ?: "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
+                    contentDescription = restaurant.nombre,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            // Info principal
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Columna izquierda (nombre, ubicación)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(5.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = restaurant.nombre,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.background,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = restaurant.ubicacion ?: "Sin ubicación",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.background
+                    )
+                }
+
+                // Columna derecha (valoración)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(5.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.End
+                ) {
+                    val promedio = comentarioState.promedioCalificacion
+                    val totalComentarios = comentarioState.comentarios.size
+
+                    Text(
+                        text = if (promedio > 0) "⭐ ${String.format("%.1f", promedio)}" else "⭐ N/A",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFFD9B88F),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "$totalComentarios comentarios",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.background
+                    )
+                }
+            }
+
+            // Acciones redondas
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                ActionCircle(
+                    icon = R.drawable.ic_location,
+                    text = "Ubicación",
+                    color = accent,
+                    onClick = {
+                        val intent = Intent(context, MapsActivity::class.java).apply {
+                            putExtra("restaurante_id", restaurant.id)
+                            putExtra("lat", restaurant.latitud)
+                            putExtra("lng", restaurant.longitud)
+                        }
+                        context.startActivity(intent)
+                    }
                 )
 
-                LazyRow(
+                ActionCircle(
+                    icon = R.drawable.ic_phone,
+                    text = "Contactos",
+                    color = accent
+                ) { showContactDialog = true }
+
+//            ActionCircle(
+//                icon = R.drawable.ic_camera,
+//                text = "Fotos",
+//                color = accent
+//            )
+
+                ActionCircle(
+                    icon = R.drawable.ic_bubble,
+                    text = "Comentarios",
+                    color = accent
+                ) {
+                    navController.navigate("Calification/${restaurant.id}")
+                }
+            }
+
+            // Características (TAGS REALES desde BD)
+            if (restaurantSel.tags.isNotEmpty()) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 5.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(vertical = 5.dp)
                 ) {
-                    items(restaurantSel.tags.size) { index ->
-                        Surface(
-                            color = Color(0xFF4CAF50),
-                            shape = MaterialTheme.shapes.medium,
-                            tonalElevation = 2.dp,
-                            shadowElevation = 2.dp
-                        ) {
-                            Text(
-                                text = restaurantSel.tags[index].nombre,
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                                color = Color(0xFF533E25),
-                                fontSize = 14.sp
-                            )
+                    Text(
+                        text = "Características",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.background,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 5.dp, bottom = 8.dp)
+                    )
+
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(restaurantSel.tags.size) { index ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                shape = MaterialTheme.shapes.medium,
+                                tonalElevation = 2.dp,
+                                shadowElevation = 2.dp
+                            ) {
+                                Text(
+                                    text = restaurantSel.tags[index].nombre,
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Descripción
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF4CAF50),
-            tonalElevation = 4.dp,
-            shadowElevation = 4.dp
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Descripción",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF533E25),
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = restaurant.descripcion ?: "Sin descripción disponible",
-                    color = Color(0xFF533E25),
-                    fontSize = 14.sp
-                )
+            // Descripción
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                tonalElevation = 4.dp,
+                shadowElevation = 4.dp
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Descripción",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = restaurant.descripcion ?: "Sin descripción disponible",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
     }
+
 
     // Modal de contacto
     if (showContactDialog) {
@@ -299,7 +301,7 @@ fun ActionCircle(icon: Int, text: String, color: Color, onClick: () -> Unit) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color = Color(0xFF656C73)
+            color = MaterialTheme.colorScheme.background
         )
     }
 }
