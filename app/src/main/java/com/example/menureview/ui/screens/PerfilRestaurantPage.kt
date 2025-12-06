@@ -37,7 +37,7 @@ fun PerfilRestaurantePage(
 ) {
     val restauranteState by restauranteViewModel.state.collectAsState()
     val comentarioState by comentarioViewModel.state.collectAsState()
-    val restaurant = restauranteState.restauranteSeleccionado
+    val restaurantSel = restauranteState.restauranteSeleccionado
 
     var showContactDialog by remember { mutableStateOf(false) }
     val accent = Color(0xFF4CAF50)
@@ -45,13 +45,13 @@ fun PerfilRestaurantePage(
     val context = LocalContext.current
 
     // Cargar comentarios del restaurante
-    LaunchedEffect(restaurant?.id) {
-        restaurant?.id?.let {
+    LaunchedEffect(restaurantSel?.restaurante?.id) {
+        restaurantSel?.restaurante?.id?.let {
             comentarioViewModel.loadComentariosByRestaurante(it)
         }
     }
 
-    if (restaurant == null) {
+    if (restaurantSel == null) {
         // Mostrar loading o mensaje
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -61,7 +61,7 @@ fun PerfilRestaurantePage(
         }
         return
     }
-
+    val restaurant = restaurantSel.restaurante
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -81,7 +81,7 @@ fun PerfilRestaurantePage(
             shadowElevation = 6.dp
         ) {
             AsyncImage(
-                model = restaurant.imagenurl ?: "https://via.placeholder.com/400x220",
+                model = restaurant.imagenurl ?: "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
                 contentDescription = restaurant.nombre,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -178,38 +178,41 @@ fun PerfilRestaurantePage(
             }
         }
 
-        // Características (tags simulados - TODO: implementar tags reales)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp)
-        ) {
-            LazyRow(
+        // Características (TAGS REALES desde BD)
+        if (restaurantSel.tags.isNotEmpty()) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(vertical = 5.dp)
             ) {
-                // TODO: Cargar tags reales desde la BD
-                val caracteristicas = listOf(
-                    "Restaurante 🍽️",
-                    "Ambiente Familiar 👨‍👩‍👧‍👦",
-                    "Pet Friendly 🐶",
-                    "Delivery Disponible 🚗"
+                Text(
+                    text = "Características",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFF656C73),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 5.dp, bottom = 8.dp)
                 )
-                items(caracteristicas.size) { index ->
-                    Surface(
-                        color = Color(0xFF4CAF50),
-                        shape = MaterialTheme.shapes.medium,
-                        tonalElevation = 2.dp,
-                        shadowElevation = 2.dp
-                    ) {
-                        Text(
-                            text = caracteristicas[index],
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                            color = Color(0xFF533E25),
-                            fontSize = 14.sp
-                        )
+
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 5.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(restaurantSel.tags.size) { index ->
+                        Surface(
+                            color = Color(0xFF4CAF50),
+                            shape = MaterialTheme.shapes.medium,
+                            tonalElevation = 2.dp,
+                            shadowElevation = 2.dp
+                        ) {
+                            Text(
+                                text = restaurantSel.tags[index].nombre,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                color = Color(0xFF533E25),
+                                fontSize = 14.sp
+                            )
+                        }
                     }
                 }
             }

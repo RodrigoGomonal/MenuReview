@@ -59,6 +59,8 @@ package com.example.menureview
 //    }
 //}
 import android.app.Application
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
@@ -77,6 +79,7 @@ import com.example.menureview.viewmodel.*
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.menureview.ui.components.FullMapScreen
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun MenuReviewApp(userViewModel: UserViewModel) {
     val navController = rememberNavController()
@@ -129,8 +132,8 @@ fun MenuReviewApp(userViewModel: UserViewModel) {
             composable("RestaurantesList") {
                 RestaurantesListScreen(
                     viewModel = restauranteViewModel,
-                    onRestauranteClick = { restaurante ->
-                        restauranteViewModel.selectRestaurante(restaurante)
+                    onRestauranteClick = { restauranteConCalif ->
+                        restauranteViewModel.selectRestaurante(restauranteConCalif)
                         navController.navigate("PerfilRestaurant")
                     }
                 )

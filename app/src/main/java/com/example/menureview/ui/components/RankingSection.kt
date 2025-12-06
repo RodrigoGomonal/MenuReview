@@ -1,6 +1,7 @@
 package com.example.menureview.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -13,19 +14,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.menureview.data.models.RestauranteEntity
+import com.example.menureview.viewmodel.Restaurante
 import com.example.menureview.viewmodel.RestauranteViewModel
 
 @Composable
 fun RankingSection(
     viewModel: RestauranteViewModel,
     modifier: Modifier = Modifier,
-    onRestauranteClick: (RestauranteEntity) -> Unit = {}
+    onRestauranteClick: (Restaurante) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
 
-    // Ordenar restaurantes (por ahora por ID, luego por calificación real)
+    // Top restaurantes ordenados por calificación
     val topRestaurants = remember(state.restaurantes) {
-        state.restaurantes.take(5) // Top 5
+        state.restaurantes.take(5)
     }
 
     ElevatedCard(
@@ -80,12 +82,12 @@ fun RankingSection(
                     Spacer(modifier = Modifier.height(18.dp))
 
                     // LISTA NORMAL DESDE EL 4to
-                    topRestaurants.drop(3).forEachIndexed { index, restaurant ->
+                    topRestaurants.drop(3).forEachIndexed { index, restauranteConCalif ->
                         RankingItem(
                             position = index + 4,
-                            name = restaurant.nombre,
-                            score = 4.5f, // TODO: Calcular promedio real de comentarios
-                            onClick = { onRestauranteClick(restaurant) }
+                            name = restauranteConCalif.restaurante.nombre,
+                            score = restauranteConCalif.promedioCalificacion,
+                            onClick = { onRestauranteClick(restauranteConCalif) }
                         )
                     }
                 }
@@ -97,8 +99,8 @@ fun RankingSection(
 // COMPOSABLE DEL PODIO TOP 3
 @Composable
 fun PodiumSection(
-    top3: List<RestauranteEntity>,
-    onRestauranteClick: (RestauranteEntity) -> Unit
+    top3: List<Restaurante>,
+    onRestauranteClick: (Restaurante) -> Unit
 ) {
     val gold = Color(0xFFFFD700)
     val silver = Color(0xFFC0C0C0)
@@ -114,7 +116,7 @@ fun PodiumSection(
             PodiumItem(
                 place = 2,
                 color = silver,
-                restaurant = top3[1],
+                restauranteConCalif  = top3[1],
                 onClick = { onRestauranteClick(top3[1]) }
             )
         }
@@ -124,7 +126,7 @@ fun PodiumSection(
             PodiumItem(
                 place = 1,
                 color = gold,
-                restaurant = top3[0],
+                restauranteConCalif  = top3[0],
                 isFirst = true,
                 onClick = { onRestauranteClick(top3[0]) }
             )
@@ -135,7 +137,7 @@ fun PodiumSection(
             PodiumItem(
                 place = 3,
                 color = bronze,
-                restaurant = top3[2],
+                restauranteConCalif  = top3[2],
                 onClick = { onRestauranteClick(top3[2]) }
             )
         }
@@ -147,7 +149,7 @@ fun PodiumSection(
 fun PodiumItem(
     place: Int,
     color: Color,
-    restaurant: RestauranteEntity,
+    restauranteConCalif: Restaurante,
     isFirst: Boolean = false,
     onClick: () -> Unit = {}
 ) {
@@ -159,7 +161,11 @@ fun PodiumItem(
     ) {
         // Estrella con la nota arriba
         Text(
-            text = "⭐ 4.5", // TODO: Calcular promedio real
+            text = if (restauranteConCalif.promedioCalificacion > 0) {
+                "⭐ ${String.format("%.1f", restauranteConCalif.promedioCalificacion)}"
+            } else {
+                "⭐ N/A"
+            },
             fontSize = 16.sp,
             color = Color(0xFFFFC107)
         )
@@ -168,7 +174,7 @@ fun PodiumItem(
 
         // Nombre del restaurante
         Text(
-            text = restaurant.nombre,
+            text = restauranteConCalif.restaurante.nombre,
             fontSize = 14.sp,
             color = Color.Black,
             fontWeight = FontWeight.Bold,

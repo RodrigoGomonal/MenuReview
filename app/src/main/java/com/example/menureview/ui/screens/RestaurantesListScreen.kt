@@ -17,13 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.menureview.data.models.RestauranteEntity
+import com.example.menureview.viewmodel.Restaurante
 import com.example.menureview.viewmodel.RestauranteViewModel
 
 @Composable
 fun RestaurantesListScreen(
     viewModel: RestauranteViewModel,
-    onRestauranteClick: (RestauranteEntity) -> Unit
+    onRestauranteClick: (Restaurante) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val bgSoft = Color(0xFFDCEAF2)
@@ -83,10 +83,10 @@ fun RestaurantesListScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(state.restaurantes) { restaurante ->
+                    items(state.restaurantes) { restauranteConCalif ->
                         RestauranteCardHorizontal(
-                            restaurante = restaurante,
-                            onClick = { onRestauranteClick(restaurante) }
+                            restauranteConCalif = restauranteConCalif,
+                            onClick = { onRestauranteClick(restauranteConCalif) }
                         )
                     }
                 }
@@ -97,13 +97,15 @@ fun RestaurantesListScreen(
 
 @Composable
 fun RestauranteCardHorizontal(
-    restaurante: RestauranteEntity,
+    restauranteConCalif: Restaurante,
     onClick: () -> Unit
 ) {
+    val restaurante = restauranteConCalif.restaurante
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(140.dp)
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp),
@@ -113,15 +115,42 @@ fun RestauranteCardHorizontal(
             modifier = Modifier.fillMaxSize()
         ) {
             // Imagen del restaurante (izquierda)
-            AsyncImage(
-                model = restaurante.imagenurl ?: "https://img.freepik.com/vector-premium/vector-icono-imagen-predeterminado-pagina-imagen-faltante-diseno-sitio-web-o-aplicacion-movil-no-hay-foto-disponible_87543-11093.jpg",
-                contentDescription = restaurante.nombre,
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
-                    .width(120.dp)
+                    .width(140.dp)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
-            )
+            ) {
+                AsyncImage(
+                    model = restaurante.imagenurl ?: "https://placehold.co/140x140/4CAF50/FFF?text=Sin+Imagen",
+                    contentDescription = restaurante.nombre,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)),
+                    onError = {
+                        android.util.Log.e("ImageLoad", "Error cargando: ${restaurante.imagenurl}")
+                    }
+                )
+
+                // Badge de calificación sobre la imagen
+                if (restauranteConCalif.promedioCalificacion > 0) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                        color = Color(0xFFFFC107),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "⭐ ${String.format("%.1f", restauranteConCalif.promedioCalificacion)}",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
 
             // Información del restaurante (derecha)
             Column(
@@ -142,35 +171,52 @@ fun RestauranteCardHorizontal(
                 // Ubicación
                 restaurante.ubicacion?.let {
                     Text(
-                        text = "📍 $it",
+                        text = it,
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF656C73).copy(alpha = 0.7f),
-                        maxLines = 1
+                        maxLines = 1,
+                        fontSize = 12.sp
                     )
                 }
 
-                // Tags simulados (TODO: implementar tags reales)
+                // Tags desde la BD
+                if (restauranteConCalif.tags.isNotEmpty()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        restauranteConCalif.tags.take(2).forEach { tag ->
+                            TagChip(tag.nombre)
+                        }
+                        if (restauranteConCalif.tags.size > 2) {
+                            TagChip("+${restauranteConCalif.tags.size - 2}")
+                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                // Calificación y reseñas
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    TagChip("Japonés 🎌")
-                    TagChip("Sushi 🍣")
-                }
-
-                // Calificación (TODO: calcular promedio real)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "⭐ 4.5",
-                        fontSize = 14.sp,
-                        color = Color(0xFFFFC107),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "(25 reseñas)",
-                        fontSize = 12.sp,
-                        color = Color(0xFF656C73).copy(alpha = 0.6f)
-                    )
+                    if (restauranteConCalif.promedioCalificacion > 0) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "(${restauranteConCalif.totalComentarios} reseñas)",
+                                fontSize = 11.sp,
+                                color = Color(0xFF656C73).copy(alpha = 0.6f)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "Sin reseñas",
+                            fontSize = 12.sp,
+                            color = Color(0xFF656C73).copy(alpha = 0.5f)
+                        )
+                    }
                 }
             }
         }

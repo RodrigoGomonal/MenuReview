@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.foundation)
     val room_version = "2.8.3" // Reemplaza con la versión más reciente
 
     implementation(libs.androidx.core.ktx)
