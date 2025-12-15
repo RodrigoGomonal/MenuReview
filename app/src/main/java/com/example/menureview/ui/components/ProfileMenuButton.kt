@@ -110,13 +110,6 @@ fun ProfileMenuButton(userViewModel: UserViewModel) {
                     modifier = Modifier.background(Color(0xFFDCEAF2))
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Ver perfil", color = Color(0xFF656C73)) },
-                        onClick = {
-                            expanded = false
-                            // Aquí puedes navegar a PerfilUserPage
-                        }
-                    )
-                    DropdownMenuItem(
                         text = { Text("Cerrar sesión", color = Color.Red) },
                         onClick = {
                             expanded = false

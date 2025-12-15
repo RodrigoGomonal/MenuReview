@@ -3,10 +3,8 @@ package com.example.menureview.data.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CuentaEntity(
+data class TipoUsuarioEntity (
     val id: Int = 0,
-    val nombre: String,
-    val correo: String,
-    val tipousuario_id: Int,
+    val name: String,
     val active: Boolean
 )

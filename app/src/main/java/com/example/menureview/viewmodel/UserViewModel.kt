@@ -7,6 +7,7 @@ import com.example.menureview.data.Api.AuthApiService
 import com.example.menureview.data.Api.LoginRequest
 import com.example.menureview.data.Api.RegisterRequest
 import com.example.menureview.data.models.CuentaEntity
+import com.example.menureview.data.models.UpdateCuentaRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -145,7 +146,7 @@ class UserViewModel(
                 android.util.Log.d("UserViewModel", "Registrando usuario: $correo")
 
                 val response = authService.register(
-                    RegisterRequest(nombre, correo, clave)
+                    RegisterRequest(nombre, correo, clave, 3)
                 )
 
                 if (response.isSuccessful) {
@@ -204,5 +205,103 @@ class UserViewModel(
      */
     fun resetState() {
         _state.value = _state.value.copy(error = null, exito = false, isLoading = false)
+    }
+
+    /**
+     * ACTUALIZAR PERFIL
+     */
+    fun updateProfile(id: Int, nombre: String, correo: String, nuevaClave: String?) {
+        if (nombre.isBlank() || correo.isBlank()) {
+            _state.value = LoginState(error = "Todos los campos son obligatorios")
+            return
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+            _state.value = LoginState(error = "Correo inválido")
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true, error = null, errorCode = null)
+
+            try {
+                android.util.Log.d("UserViewModel", "Actualizando perfil usuario ID: $id")
+                android.util.Log.d("UserViewModel", "Usuario actual completo: ${_state.value.usuarioActual}")
+                android.util.Log.d("UserViewModel", "tipousuario_id: ${_state.value.usuarioActual?.tipousuario_id}")
+
+                val tipousuarioId = _state.value.usuarioActual?.tipousuario_id ?: 3
+
+                if (tipousuarioId == 0) {
+                    android.util.Log.e("UserViewModel", "ERROR: tipousuario_id es 0! El usuario no se cargó correctamente")
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = "Error de sesión. Por favor cierra sesión y vuelve a iniciar."
+                    )
+                    return@launch
+                }
+
+                // Preparar el body de la petición
+                val updateRequest = UpdateCuentaRequest(
+                    nombre = nombre,
+                    correo = correo,
+                    clave = nuevaClave,  // Puede ser null
+                    active = true,
+                    tipousuario_id = tipousuarioId
+                )
+
+                val response = authService.updateCuenta(id, updateRequest)
+
+                if (response.isSuccessful) {
+                    val cuentaActualizada = response.body()
+
+                    if (cuentaActualizada != null) {
+                        // Actualizar usuario en local storage
+                        authRepository.saveUser(cuentaActualizada)
+
+                        android.util.Log.d("UserViewModel", "Perfil actualizado: ${cuentaActualizada.nombre}")
+
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            exito = true,
+                            usuarioActual = cuentaActualizada
+                        )
+                    } else {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = "Respuesta vacía del servidor"
+                        )
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    android.util.Log.e("UserViewModel", "Error body: $errorBody")
+
+                    val errorCode = when {
+                        errorBody.contains("El correo ya está registrado") -> "EMAIL_ALREADY_EXISTS"
+                        else -> null
+                    }
+
+                    val errorMsg = when (response.code()) {
+                        400 -> "El correo ya está en uso"
+                        404 -> "Usuario no encontrado"
+                        500 -> "Error del servidor"
+                        else -> "Error: ${response.code()}"
+                    }
+
+                    android.util.Log.e("UserViewModel", "Error actualizar perfil: $errorMsg")
+
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = errorMsg,
+                        errorCode = errorCode
+                    )
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("UserViewModel", "Excepción actualizar perfil: ${e.message}")
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    error = "Error: ${e.message}"
+                )
+            }
+        }
     }
 }

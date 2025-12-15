@@ -111,7 +111,9 @@ class AuthRepositoryTest {
         val usuario = CuentaEntity(
             id = 1,
             nombre = "Test User",
-            correo = "test@example.com"
+            correo = "test@example.com",
+            tipousuario_id = 3,
+            active = true
         )
 
         // Act
@@ -137,8 +139,8 @@ class AuthRepositoryTest {
     @Test
     fun saveUser_sobrescribeUsuarioAnterior() {
         // Arrange
-        val usuario1 = CuentaEntity(1, "Usuario 1", "user1@example.com")
-        val usuario2 = CuentaEntity(2, "Usuario 2", "user2@example.com")
+        val usuario1 = CuentaEntity(1, "Usuario 1", "user1@example.com", 3, true)
+        val usuario2 = CuentaEntity(2, "Usuario 2", "user2@example.com", 3, true)
 
         // Act
         authRepository.saveUser(usuario1)
@@ -178,7 +180,7 @@ class AuthRepositoryTest {
     @Test
     fun isLoggedIn_retornaFalseSoloConUsuario() {
         // Arrange
-        val usuario = CuentaEntity(1, "Test", "test@example.com")
+        val usuario = CuentaEntity(1, "Test", "test@example.com",3, true)
         authRepository.saveUser(usuario)
 
         // Act
@@ -192,7 +194,7 @@ class AuthRepositoryTest {
     fun isLoggedIn_retornaTrueCuandoHayTokenYUsuario() {
         // Arrange
         authRepository.saveToken("test_token")
-        authRepository.saveUser(CuentaEntity(1, "Test", "test@example.com"))
+        authRepository.saveUser(CuentaEntity(1, "Test", "test@example.com",3, true))
 
         // Act
         val isLoggedIn = authRepository.isLoggedIn()
@@ -205,7 +207,7 @@ class AuthRepositoryTest {
     fun clearSession_eliminaTokenYUsuario() {
         // Arrange
         authRepository.saveToken("test_token")
-        authRepository.saveUser(CuentaEntity(1, "Test", "test@example.com"))
+        authRepository.saveUser(CuentaEntity(1, "Test", "test@example.com",3, true))
 
         // Act
         authRepository.clearSession()
@@ -220,7 +222,7 @@ class AuthRepositoryTest {
     fun clearToken_aliasParaClearSession() {
         // Arrange
         authRepository.saveToken("test_token")
-        authRepository.saveUser(CuentaEntity(1, "Test", "test@example.com"))
+        authRepository.saveUser(CuentaEntity(1, "Test", "test@example.com",3, true))
 
         // Act
         authRepository.clearToken()
@@ -238,7 +240,7 @@ class AuthRepositoryTest {
     fun datosPersisteEntreInstancias() {
         // Arrange
         val token = "test_token"
-        val usuario = CuentaEntity(1, "Test", "test@example.com")
+        val usuario = CuentaEntity(1, "Test", "test@example.com",3, true)
         authRepository.saveToken(token)
         authRepository.saveUser(usuario)
 

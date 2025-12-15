@@ -22,7 +22,8 @@ data class LoginResponse(
 data class RegisterRequest(
     val nombre: String,
     val correo: String,
-    val clave: String
+    val clave: String,
+    val tipousuario_id: Int
 )
 
 // Response de registro (misma estructura que login)

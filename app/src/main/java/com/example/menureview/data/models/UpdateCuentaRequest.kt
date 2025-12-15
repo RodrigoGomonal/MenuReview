@@ -3,10 +3,10 @@ package com.example.menureview.data.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CuentaEntity(
-    val id: Int = 0,
+data class UpdateCuentaRequest(
     val nombre: String,
     val correo: String,
-    val tipousuario_id: Int,
-    val active: Boolean
+    val clave: String? = null,  // Opcional
+    val active: Boolean,
+    val tipousuario_id: Int
 )
