@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.menureview.ui.theme.MenuReviewTheme
 import com.example.menureview.viewmodel.Restaurante
 import com.example.menureview.viewmodel.RestauranteViewModel
 
@@ -27,71 +28,73 @@ fun RankingSection(
     val topRestaurants = remember(state.restaurantes) {
         state.restaurantes.take(5)
     }
+    MenuReviewTheme {
+        ElevatedCard(
+            modifier = modifier
+                .fillMaxWidth()
+                .shadow(8.dp, RoundedCornerShape(20.dp)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Ranking de Restaurantes",
+                    fontSize = 22.sp,
+                    color = MaterialTheme.colorScheme.background,
+                    style = MaterialTheme.typography.titleLarge
+                )
 
-    ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF4CAF50)),
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Ranking de Restaurantes",
-                fontSize = 22.sp,
-                color = Color(0xFF533E25),
-                style = MaterialTheme.typography.titleLarge
-            )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            when {
-                state.isLoading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = Color.White)
+                when {
+                    state.isLoading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color.White)
+                        }
                     }
-                }
 
-                state.error != null -> {
-                    Text(
-                        text = "Error al cargar ranking",
-                        color = Color.Red,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-
-                topRestaurants.isEmpty() -> {
-                    Text(
-                        text = "No hay restaurantes disponibles",
-                        color = Color(0xFF533E25),
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-
-                else -> {
-                    // PODIO TOP 3
-                    PodiumSection(topRestaurants.take(3), onRestauranteClick)
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    // LISTA NORMAL DESDE EL 4to
-                    topRestaurants.drop(3).forEachIndexed { index, restauranteConCalif ->
-                        RankingItem(
-                            position = index + 4,
-                            name = restauranteConCalif.restaurante.nombre,
-                            score = restauranteConCalif.promedioCalificacion,
-                            onClick = { onRestauranteClick(restauranteConCalif) }
+                    state.error != null -> {
+                        Text(
+                            text = "Error al cargar ranking",
+                            color = Color.Red,
+                            modifier = Modifier.padding(16.dp)
                         )
+                    }
+
+                    topRestaurants.isEmpty() -> {
+                        Text(
+                            text = "No hay restaurantes disponibles",
+                            color = Color(0xFF533E25),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+
+                    else -> {
+                        // PODIO TOP 3
+                        PodiumSection(topRestaurants.take(3), onRestauranteClick)
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        // LISTA NORMAL DESDE EL 4to
+                        topRestaurants.drop(3).forEachIndexed { index, restauranteConCalif ->
+                            RankingItem(
+                                position = index + 4,
+                                name = restauranteConCalif.restaurante.nombre,
+                                score = restauranteConCalif.promedioCalificacion,
+                                onClick = { onRestauranteClick(restauranteConCalif) }
+                            )
+                        }
                     }
                 }
             }
         }
     }
+
 }
 
 // COMPOSABLE DEL PODIO TOP 3

@@ -6,5 +6,7 @@ import kotlinx.serialization.Serializable
 data class CuentaEntity(
     val id: Int = 0,
     val nombre: String,
-    val correo: String
+    val correo: String,
+    val tipoUsuario_id: Int,
+    val active: Boolean
 )

@@ -16,9 +16,9 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         // Si hay token, agregarlo al header Authorization
         if (token != null) {
             requestBuilder.addHeader("Authorization", "Bearer $token")
-            android.util.Log.d("AuthInterceptor", "✅ Token agregado a request")
+            android.util.Log.d("AuthInterceptor", "Token agregado a request")
         } else {
-            android.util.Log.d("AuthInterceptor", "⚠️ No hay token disponible")
+            android.util.Log.d("AuthInterceptor", "No hay token disponible")
         }
 
         return chain.proceed(requestBuilder.build())

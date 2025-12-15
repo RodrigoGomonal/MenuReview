@@ -18,6 +18,7 @@ data class LoginState(
     val isLoading: Boolean = false,
     val exito: Boolean = false,
     val error: String? = null,
+    val errorCode: String? = null,
     val usuarioActual: CuentaEntity? = null
 )
 
@@ -47,7 +48,7 @@ class UserViewModel(
         val user = authRepository.getUser()
         if (user != null && authRepository.isLoggedIn()) {
             _state.value = LoginState(usuarioActual = user)
-            android.util.Log.d("UserViewModel", "✅ Sesión recuperada: ${user.nombre}")
+            android.util.Log.d("UserViewModel", "Sesión recuperada: ${user.nombre}")
         }
     }
 
@@ -64,7 +65,7 @@ class UserViewModel(
             _state.value = LoginState(isLoading = true)
 
             try {
-                android.util.Log.d("UserViewModel", "📱 Intentando login: $email")
+                android.util.Log.d("UserViewModel", "Intentando login: $email")
 
                 val response = authService.login(LoginRequest(email, password))
 
@@ -76,7 +77,7 @@ class UserViewModel(
                         authRepository.saveToken(loginResponse.token)
                         authRepository.saveUser(loginResponse.user)
 
-                        android.util.Log.d("UserViewModel", "✅ Login exitoso: ${loginResponse.user.nombre}")
+                        android.util.Log.d("UserViewModel", "Login exitoso: ${loginResponse.user.nombre}")
 
                         _state.value = LoginState(
                             exito = true,
@@ -86,16 +87,31 @@ class UserViewModel(
                         _state.value = LoginState(error = "Respuesta vacía del servidor")
                     }
                 } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    android.util.Log.e("UserViewModel", "Error body: $errorBody")
+
+                    // Parseo simple del código de error
+                    val errorCode = when {
+                        errorBody.contains("EMAIL_NOT_FOUND") -> "EMAIL_NOT_FOUND"
+                        errorBody.contains("INVALID_PASSWORD") -> "INVALID_PASSWORD"
+                        errorBody.contains("ACCOUNT_INACTIVE") -> "ACCOUNT_INACTIVE"
+                        else -> null
+                    }
+
                     val errorMsg = when (response.code()) {
-                        401 -> "Correo o contraseña incorrectos"
+                        401 -> "Credenciales incorrectas"
+                        403 -> "Cuenta inactiva"
                         500 -> "Error del servidor"
                         else -> "Error: ${response.code()}"
                     }
-                    android.util.Log.e("UserViewModel", "❌ Error login: $errorMsg")
-                    _state.value = LoginState(error = errorMsg)
+                    android.util.Log.e("UserViewModel", "Error login: $errorMsg")
+                    _state.value = LoginState(
+                        error = errorMsg,
+                        errorCode = errorCode
+                    )
                 }
             } catch (e: Exception) {
-                android.util.Log.e("UserViewModel", "❌ Excepción login: ${e.message}")
+                android.util.Log.e("UserViewModel", "Excepción login: ${e.message}")
                 val errorMsg = when {
                     e.message?.contains("Unable to resolve host") == true ->
                         "No se puede conectar al servidor. Verifica tu conexión."
@@ -126,7 +142,7 @@ class UserViewModel(
             _state.value = LoginState(isLoading = true)
 
             try {
-                android.util.Log.d("UserViewModel", "📱 Registrando usuario: $correo")
+                android.util.Log.d("UserViewModel", "Registrando usuario: $correo")
 
                 val response = authService.register(
                     RegisterRequest(nombre, correo, clave)
@@ -140,7 +156,7 @@ class UserViewModel(
                         authRepository.saveToken(registerResponse.token)
                         authRepository.saveUser(registerResponse.user)
 
-                        android.util.Log.d("UserViewModel", "✅ Registro exitoso: ${registerResponse.user.nombre}")
+                        android.util.Log.d("UserViewModel", "Registro exitoso: ${registerResponse.user.nombre}")
 
                         _state.value = LoginState(
                             exito = true,
@@ -150,16 +166,25 @@ class UserViewModel(
                         _state.value = LoginState(error = "Respuesta vacía del servidor")
                     }
                 } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    android.util.Log.e("UserViewModel", "Error body: $errorBody")
+
+                    // Detectar si el correo ya existe
+                    val errorCode = when {
+                        errorBody.contains("El correo ya está registrado") -> "EMAIL_ALREADY_EXISTS"
+                        else -> null
+                    }
+
                     val errorMsg = when (response.code()) {
                         400 -> "El correo ya está registrado"
                         500 -> "Error del servidor"
                         else -> "Error: ${response.code()}"
                     }
-                    android.util.Log.e("UserViewModel", "❌ Error registro: $errorMsg")
-                    _state.value = LoginState(error = errorMsg)
+                    android.util.Log.e("UserViewModel", "Error registro: $errorMsg, Code: $errorCode")
+                    _state.value = LoginState(error = errorMsg, errorCode = errorCode)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("UserViewModel", "❌ Excepción registro: ${e.message}")
+                android.util.Log.e("UserViewModel", "Excepción registro: ${e.message}")
                 _state.value = LoginState(error = "Error: ${e.message}")
             }
         }
@@ -171,7 +196,7 @@ class UserViewModel(
     fun logout() {
         authRepository.clearSession()
         _state.value = LoginState()
-        android.util.Log.d("UserViewModel", "🚪 Sesión cerrada")
+        android.util.Log.d("UserViewModel", "Sesión cerrada")
     }
 
     /**

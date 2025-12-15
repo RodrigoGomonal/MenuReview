@@ -47,7 +47,7 @@ fun MainPage(
         ) {
             Spacer(Modifier.height(6.dp))
 
-            SearchBarSection()
+            //SearchBarSection()
             Spacer(Modifier.height(20.dp))
 
             RankingSection(
@@ -71,33 +71,33 @@ fun MainPage(
     }
 }
 
-@Composable
-fun SearchBarSection() {
-    var searchText by remember { mutableStateOf(TextFieldValue("")) }
-
-    OutlinedTextField(
-        value = searchText,
-        onValueChange = { searchText = it },
-        leadingIcon = {
-            Image(
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "Buscar",
-                modifier = Modifier.size(24.dp)
-            )
-        },
-        placeholder = { Text("Buscar restaurantes...", fontSize = 14.sp) },
-        shape = RoundedCornerShape(14.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color(0xFFEFB810),
-            unfocusedBorderColor = Color(0xFFCCCCCC),
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .shadow(4.dp, RoundedCornerShape(14.dp))
-            .background(Color.White, RoundedCornerShape(14.dp))
-    )
-}
+//@Composable
+//fun SearchBarSection() {
+//    var searchText by remember { mutableStateOf(TextFieldValue("")) }
+//
+//    OutlinedTextField(
+//        value = searchText,
+//        onValueChange = { searchText = it },
+//        leadingIcon = {
+//            Image(
+//                painter = painterResource(id = R.drawable.ic_search),
+//                contentDescription = "Buscar",
+//                modifier = Modifier.size(24.dp)
+//            )
+//        },
+//        placeholder = { Text("Buscar restaurantes...", fontSize = 14.sp) },
+//        shape = RoundedCornerShape(14.dp),
+//        colors = OutlinedTextFieldDefaults.colors(
+//            focusedBorderColor = Color(0xFFEFB810),
+//            unfocusedBorderColor = Color(0xFFCCCCCC),
+//        ),
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(56.dp)
+//            .shadow(4.dp, RoundedCornerShape(14.dp))
+//            .background(Color.White, RoundedCornerShape(14.dp))
+//    )
+//}
 
 @Composable
 fun NearYouSection(
@@ -108,7 +108,7 @@ fun NearYouSection(
 ) {
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(Modifier.padding(16.dp)) {

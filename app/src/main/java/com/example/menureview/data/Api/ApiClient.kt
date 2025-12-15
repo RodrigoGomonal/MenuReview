@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     // 🔧 CAMBIA ESTA URL POR TU IP EC2
-    private const val BASE_URL = "http://18.232.149.205:3000/"
+    private const val BASE_URL = "http://54.87.61.226:3000/"
 
     lateinit var retrofit: Retrofit
     private lateinit var applicationContext: Context

@@ -79,7 +79,8 @@ fun ProfileMenuButton(userViewModel: UserViewModel) {
                 if (showRegisterDialog) {
                     RegisterDialog(
                         onDismiss = { showRegisterDialog = false },
-                        userViewModel = userViewModel
+                        userViewModel = userViewModel,
+                        onRegisterSuccess = { showRegisterDialog = false }
                     )
                 }
             } else {

@@ -1,7 +1,6 @@
 package com.example.menureview.data.Api
 
 import com.example.menureview.data.models.CuentaEntity
-import com.example.menureview.data.models.UserEntity
 import retrofit2.http.POST
 import retrofit2.Response
 import retrofit2.http.Body
@@ -18,6 +17,6 @@ interface AuthApiService {
     suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
 
     // Obtener perfil actual (ruta protegida, requiere token)
-    @GET("cuentas/me")
+    @GET("cuentas")
     suspend fun getProfile(@Header("Authorization") token: String): Response<CuentaEntity>
 }
