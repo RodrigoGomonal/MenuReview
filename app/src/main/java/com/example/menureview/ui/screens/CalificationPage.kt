@@ -1,5 +1,6 @@
 package com.example.menureview.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
@@ -25,6 +26,7 @@ import com.example.menureview.viewmodel.ComentarioViewModel
 import com.example.menureview.viewmodel.UserViewModel
 import kotlin.math.roundToInt
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalificationPage(
@@ -40,10 +42,8 @@ fun CalificationPage(
 
     var showAddDialog by remember { mutableStateOf(false) }
 
-    val bgSoft = Color(0xFFDCEAF2)
     val starYellow = Color(0xFFFFD700)
     val bluePrimary = Color(0xFF4CAF50)
-    val blueLight = Color(0xFF4CAF50).copy(alpha = 0.3f)
     val blueAvatar = Color(0xFF4CAF50)
     val buttonBlue = Color(0xFF4CAF50)
 

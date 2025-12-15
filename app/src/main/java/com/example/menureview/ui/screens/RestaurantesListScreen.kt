@@ -1,5 +1,6 @@
 package com.example.menureview.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -118,6 +119,7 @@ fun RestaurantesListScreen(
 
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun RestauranteCardHorizontal(
     restauranteConCalif: Restaurante,

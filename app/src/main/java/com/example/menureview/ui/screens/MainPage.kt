@@ -1,24 +1,17 @@
 package com.example.menureview.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.statusBarsPadding
-import com.example.menureview.R
-import com.example.menureview.viewmodel.UserViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.draw.shadow
-import androidx.navigation.NavController
 import com.example.menureview.ui.components.GoogleMapCard
 import com.example.menureview.ui.components.RankingSection
 import com.example.menureview.ui.theme.MenuReviewTheme
@@ -28,10 +21,8 @@ import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MainPage(
-    userViewModel: UserViewModel,
     restauranteViewModel: RestauranteViewModel,
-    locationViewModel: LocationViewModel,
-    navController: NavController
+    locationViewModel: LocationViewModel
 ) {
 
     val lastKnown = locationViewModel.lastKnownLocation
@@ -52,18 +43,13 @@ fun MainPage(
 
             RankingSection(
                 viewModel = restauranteViewModel,
-                modifier = Modifier.fillMaxWidth(),
-                onRestauranteClick = { restaurante ->
-                    restauranteViewModel.selectRestaurante(restaurante)
-                    navController.navigate("PerfilRestaurant")
-                }
+                modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(20.dp))
 
             NearYouSection(
                 lastKnownLocation = lastKnown,
-                hasRealLocation = hasRealLocation,
-                onOpenFullMap = { navController.navigate("FullMap") }
+                hasRealLocation = hasRealLocation
             )
 
             Spacer(Modifier.height(20.dp))
@@ -102,7 +88,6 @@ fun MainPage(
 @Composable
 fun NearYouSection(
     lastKnownLocation: LatLng,
-    onOpenFullMap: () -> Unit,
     modifier: Modifier = Modifier,
     hasRealLocation: Boolean,
 ) {

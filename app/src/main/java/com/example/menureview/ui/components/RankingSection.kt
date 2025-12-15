@@ -1,5 +1,6 @@
 package com.example.menureview.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,8 +20,7 @@ import com.example.menureview.viewmodel.RestauranteViewModel
 @Composable
 fun RankingSection(
     viewModel: RestauranteViewModel,
-    modifier: Modifier = Modifier,
-    onRestauranteClick: (Restaurante) -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -76,7 +76,7 @@ fun RankingSection(
 
                     else -> {
                         // PODIO TOP 3
-                        PodiumSection(topRestaurants.take(3), onRestauranteClick)
+                        PodiumSection(topRestaurants.take(3))
 
                         Spacer(modifier = Modifier.height(18.dp))
 
@@ -85,8 +85,7 @@ fun RankingSection(
                             RankingItem(
                                 position = index + 4,
                                 name = restauranteConCalif.restaurante.nombre,
-                                score = restauranteConCalif.promedioCalificacion,
-                                onClick = { onRestauranteClick(restauranteConCalif) }
+                                score = restauranteConCalif.promedioCalificacion
                             )
                         }
                     }
@@ -100,8 +99,7 @@ fun RankingSection(
 // COMPOSABLE DEL PODIO TOP 3
 @Composable
 fun PodiumSection(
-    top3: List<Restaurante>,
-    onRestauranteClick: (Restaurante) -> Unit
+    top3: List<Restaurante>
 ) {
     val gold = Color(0xFFFFD700)
     val silver = Color(0xFFC0C0C0)
@@ -117,8 +115,7 @@ fun PodiumSection(
             PodiumItem(
                 place = 2,
                 color = silver,
-                restauranteConCalif  = top3[1],
-                onClick = { onRestauranteClick(top3[1]) }
+                restauranteConCalif  = top3[1]
             )
         }
 
@@ -128,8 +125,7 @@ fun PodiumSection(
                 place = 1,
                 color = gold,
                 restauranteConCalif  = top3[0],
-                isFirst = true,
-                onClick = { onRestauranteClick(top3[0]) }
+                isFirst = true
             )
         }
 
@@ -138,21 +134,20 @@ fun PodiumSection(
             PodiumItem(
                 place = 3,
                 color = bronze,
-                restauranteConCalif  = top3[2],
-                onClick = { onRestauranteClick(top3[2]) }
+                restauranteConCalif  = top3[2]
             )
         }
     }
 }
 
 // UN ELEMENTO DEL PODIO
+@SuppressLint("DefaultLocale")
 @Composable
 fun PodiumItem(
     place: Int,
     color: Color,
     restauranteConCalif: Restaurante,
-    isFirst: Boolean = false,
-    onClick: () -> Unit = {}
+    isFirst: Boolean = false
 ) {
     val height = if (isFirst) 130.dp else 100.dp
 
@@ -204,12 +199,12 @@ fun PodiumItem(
 }
 
 // ITEM NORMAL PARA POSICIONES 4+
+@SuppressLint("DefaultLocale")
 @Composable
 fun RankingItem(
     position: Int,
     name: String,
-    score: Float,
-    onClick: () -> Unit = {}
+    score: Float
 ) {
     Row(
         modifier = Modifier

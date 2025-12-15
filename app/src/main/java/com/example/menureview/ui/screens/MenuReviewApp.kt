@@ -34,7 +34,7 @@ fun MenuReviewApp(userViewModel: UserViewModel) {
         )
     )
 
-    val authRepository = remember { AuthRepository(context) }
+    remember { AuthRepository(context) }
     val restauranteViewModel: RestauranteViewModel = viewModel()
     val comentarioViewModel: ComentarioViewModel = viewModel()
 
@@ -58,10 +58,8 @@ fun MenuReviewApp(userViewModel: UserViewModel) {
             // Página principal
             composable("Main") {
                 MainPage(
-                    userViewModel = userViewModel,
                     restauranteViewModel = restauranteViewModel,
-                    locationViewModel = locationViewModel,
-                    navController = navController
+                    locationViewModel = locationViewModel
                 )
             }
 
